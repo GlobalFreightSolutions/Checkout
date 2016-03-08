@@ -74,4 +74,9 @@ gfs-checkout ul.separated li {
 	border-bottom: 1px solid lightgrey;
 }
 
+.info_box_img img {
+	width: 29px!important;
+	height: 29px!important;
+}
+
 

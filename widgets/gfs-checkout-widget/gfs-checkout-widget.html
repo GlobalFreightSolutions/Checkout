@@ -125,6 +125,7 @@
             width: 200px;
         }
 
+
         .highlight
         {
             color: #FFFFFF !important;
@@ -230,8 +231,8 @@
                 </div>
                 <div id="droppoint_info" on-click="_showDropPointDetails">
                     <template is="dom-if" if="{{_selectedDropPoint}}">
-                        <div id="b-img">
-                            <local-img img-src="assets/{{_selectedDropPoint.carrierName}}.png" local-folder="gfs-checkout-widget" width="29px" height="29px" />
+                        <div id="b-img" class="info_box_img">
+                            <local-image img-src="assets/{{_selectedDropPoint.carrierName}}.png" local-folder="gfs-checkout-widget" />
                         </div>
                         <div id="b-title">{{_selectedDropPoint.carrierName}}</div>
                         <div id="b-description">{{_selectedDropPoint.Geolocation.AddressLineCollection.string}}</div>
@@ -349,7 +350,15 @@
                 value: 500
             },
 
+            homeIcon: {
+                type: String
+            },
+
             markerIcon: {
+                type: String
+            },
+
+            selectedMarkerIcon: {
                 type: String
             },
 
@@ -611,21 +620,22 @@
 
             google.maps.event.trigger(self._map, 'resize');
 
+            //=== Home marker
             geocoder = new google.maps.Geocoder();
             geocoder.geocode(
                 {'address': postcode },
                 function(results, status) {
                     if (status == google.maps.GeocoderStatus.OK) {
                         self._map.setCenter(results[0].geometry.location);
-                            home = new google.maps.Marker({
-                                icon: self.markerIcon,
-                                position: results[0].geometry.location,
-                                map: self._map,
-                                animation: google.maps.Animation.DROP,
-                                title: 'Home',
-                                html: 'Home',
-                                icon: '/js/gfs-checkout-widget/assets/home.png' //TODO: Include this in widget
-                        });
+                        var homeMarkerConfig = {
+                            position: results[0].geometry.location,
+                            map: self._map,
+                            animation: google.maps.Animation.DROP,
+                            title: 'Home',
+                            html: 'Home'
+                        };
+                        self._getHomeIcon();
+                        new google.maps.Marker(homeMarkerConfig);
 
                     } else {
                         console.log('Google Maps API ERROR - Geocode was not successful for the following reason: ' + status);
@@ -633,11 +643,8 @@
                 }
             );
 
-            google.maps.event.addListener(self._map, 'click', function(event) {
-                self._unselectDropPoint();
-            });
+            //=== Drop point markers
             var marker;
-
             this._data.dmDropPoints.forEach(
                 function(carrierItem)
                 {
@@ -648,20 +655,22 @@
                             map: self._map,
                             animation: google.maps.Animation.DROP,
                             title: pointItem.DropPointDescription,
-                            customData: pointItem
+                            customData: pointItem,
+                            icon: self._getMarkerIcon()
                         };
-                        if (self.markerIcon) {
-                            markerConfig = self.markerIcon;
-                        }
+
                         marker = new google.maps.Marker(markerConfig);
-                        marker.addListener('click', function() {
-                            console.log(this);
+                        marker.addListener('click', function(clickedMarker) {
                             self._selectDropPoint(this);
                         });
 
                     });
                 }
             );
+
+            google.maps.event.addListener(self._map, 'click', function(event) {
+                self._unselectDropPoint();
+            });
         },
 
         _showDropPointDetails: function() {
@@ -673,13 +682,60 @@
             this._dropPointDetailsClass = "fade-out";
         },
 
+        _getHomeIcon: function() {
+            if (this.homeIcon) {
+                return this.homeIcon;
+            }
+            else {
+                return this.resolveUrl('/assets/home.png');
+            }
+        },
+
+        _getMarkerIcon: function() {
+            if (this.markerIcon) {
+                if (this.markerIcon[0] === "/") {
+                    return this.markerIcon;
+                }
+                else
+                {
+                    return this.resolveUrl(this.markerIcon);
+                }
+            }
+            else {
+                return null;
+            }
+
+        },
+
+        _getSelectedMarkerIcon: function() {
+            if (this.selectedMarkerIcon) {
+                if (this.markerIcon[0] === "/") {
+                    return this.markerIcon;
+                }
+                else
+                {
+                    return this.resolveUrl(this.selectedMarkerIcon);
+                }
+            }
+            else {
+                return this._getMarkerIcon();
+            }
+
+        },
+
         _selectDropPoint: function(marker) {
             this._unselectDropPoint();
 
             this._selectedDropPoint = marker.customData;
             this._currentMarker = marker;
             this._infoWindow.open(this._map, this._currentMarker);
-            this._currentMarker.setAnimation(google.maps.Animation.BOUNCE);
+
+            if (this.selectedMarkerIcon) {
+                this._currentMarker.setIcon(this._getSelectedMarkerIcon());
+            }
+            else {
+                this._currentMarker.setAnimation(google.maps.Animation.BOUNCE);
+            }
 
             this.$.dropPointRadio.setAttribute('checked', 'true');
             this._map.panTo(marker.getPosition());
@@ -689,6 +745,7 @@
             if (this._selectedDropPoint) {
                 
                 this._currentMarker.setAnimation(null);
+                this._currentMarker.setIcon(this._getMarkerIcon());
                 this._selectedDropPoint = null;
                 if (this._infoWindow) {
                     this._infoWindow.close();
