@@ -1,21 +1,24 @@
-<link rel="import" href="../polymer/polymer.html" />
-<link rel="import" href="../googlemaps/googlemaps.html" />
-<link rel="import" href="../local-image/local-image.html" />
+<link rel="import" href="../../polymer/polymer.html" />
+<link rel="import" href="../../googlemaps/googlemaps.html" />
+<link rel="import" href="../local-image-widget/local-image.html" />
+<link rel="import" href="../../brick-calendar/dist/brick-calendar.html" />
+<link rel="import" href="../../iron-ajax/iron-ajax.html" />
+<link rel="import" href="../../iron-accordions/iron-accordions.html" />
 <dom-module id="gfs-checkout">
 
   <template>
     <style>
         h2 { margin-left: 0px; clear: left; }
         div, span { font-family: "Raleway", "Helvetica Neue", Verdana, Arial, sans-serif; }
-    	.toggle-title{ width: 100%; cursor: pointer; }
-    	.toggle-content{ margin-top: 10px; margin-bottom: 10px; }
+        .toggle-title{ width: 100%; cursor: pointer; }
+        .toggle-content{ margin-top: 10px; margin-bottom: 10px; }
 
         .hidden {
             display: none;
             z-index: 0;
         }
     
-    	#mapContainer { 
+        #mapContainer { 
             display: block;
             position: relative;
         }
@@ -24,7 +27,7 @@
             top:0; 
             left:0;
         }
-    	#gfsSidebar {
+        #gfsSidebar {
             display: block;
             width:350px;
             overflow-y: auto;
@@ -132,42 +135,66 @@
             background-color: #90dca7 !important;
         }
 
+        .toggle-content {
+           padding-left: 2px;
+        }
+
     </style>
 
+    <iron-ajax
+        id="ajaxpost"
+        method="POST"
+        handle-as="json"
+        content-type="application/json"
+        on-response="_handleInitialResponse"
+        debounce-duration="300">
+    </iron-ajax>
+
+    <iron-ajax
+        id="ajaxget"
+        method="GET"
+        handle-as="json"
+        content-type="application/json"
+        on-response="_handleResponse"
+        debounce-duration="300">
+    </iron-ajax>
+
+
     <div id="widgetContainer">
-        <dl class="sp-methods">
+
+        <iron-accordions>
             <template is="dom-if" if="{{useStandard}}">
-                <div class="toggle-box">
-                    <div class="toggle-title step-title">
+                <iron-accordion>
+                    <div class="header">
                         <h2>{{standardDeliveryTitle}}</h2>
                     </div>
                     <div class="toggle-content">
-                        <template is="dom-repeat" items="{{_data.nonDayDefinite}}" filter="isGfs">
+                        <template is="dom-repeat" items="{{_data.nonDayDefinite}}" xfilter="isGfs">
                             <ul>
                                 <template is="dom-repeat" items="{{item.rates}}">
                                     <li class="gfsStd">
                                         <input name="shipping_method" type="radio" checked="{{item.selected}}" value="{{item.code}}" id="{{item.code}}" class="radio" />
                                         <label for$="{{item.code}}">
                                             <span class="methodname">{{item.methodTitle}}</span>
-                                            <span class="price">{{currencySymbol}}{{item.price}}</span>
+                                            <span class="price">{{item.localizedPrice}}</span>
                                         </label>
                                     </li>
                                 </template>
                             </ul>
                         </template>
                     </div>
-                </div>
+                </iron-accordion>
             </template>
 
             <template is="dom-if" if="{{useCalendar}}">
-                <div class="toggle-box">
-                    <div class="toggle-title step-title">
+                <iron-accordion>
+                    <div class="header">
                         <h2>{{calendarDeliveryTitle}}</h2>
                     </div>
                     <div class="toggle-content gfsCalendar container">
                         <div class="row">
                             <div>
-                                <brick-calendar id="calendar-widget" class="gfs-checkout" controls first-weekday-num=0"></brick-calendar>
+                                <brick-calendar id="calendar-widget" class="gfs-checkout" controls first-weekday-num=0></brick-calendar>
                                 <!-- Clicking on a day in the calendar sets _selectedDayDeliveries -->
                             </div>
                             <div>
@@ -196,57 +223,67 @@
                             </div>
                          </div>
                     </div>
-                </div>
+                </iron-accordion>
             </template>
-            <p />
-            <!--div is="dom-if" if="{{useDropPoints}}"-->
-            <div class="toggle-title step-title">
-                <h2>{{dropPointTitle}}</h2>
-            </div>
-            <div class="toggle-content gfsDropPoint" id="mapContainer">           
-                
-                <div id="dropPointDetails" class$="{{_dropPointDetailsClass}}">
-                    <div id="droppoint_overlay" style="height: {{mapHeight}}px; display: block">
-                        <div id="droppoint_overlay_close" on-click="_hideDropPointDetails">
-                            <local-image img-src="assets/x.png" local-folder="gfs-checkout-widget" alt="close"></local-image>
-                        </div>
-                        <div id="droppoint_overlay_icon">
-                            <local-image img-src="assets/{{_selectedDropPoint.carrierName}}.png" local-folder="gfs-checkout-widget" class="droppoint-overlay-imageicon" width="45px" height="45px"></local-image>
-                        </div>
-                        <div id="droppoint_overlay_label" class="droppoint_overlay_heading">{{_selectedDropPoint.carrierName}}</div>
-                        <div id="droppoint_overlay_address">
-                            {{_selectedDropPoint.Geolocation.AddressLineCollection.string}} <br />
-                            {{_selectedDropPoint.Geolocation.Town}}, {{_selectedDropPoint.Geolocation.Postcode}}
-                        </div>
-                        <br />
-                        <span class="droppoint_overlay_heading p4m-opening-hours">Opening Hours</span>:
-                        
-                        <div id="droppoint_overlay_content">
-                             <template is="dom-repeat" items="{{_selectedDropPoint.collectionSlots}}">
-                                <div class="info_day"><b>{{item.day}}</b></div>
-                                <div class="info_time">{{item.fromTime}} - {{item.toTime}}</div>
-                            </template>
+
+            <iron-accordion opened>
+                <div class="header">
+                    <h2>{{dropPointTitle}}</h2>
+                </div>
+                <div class="toggle-content gfsDropPoint" id="mapContainer">
+
+                    <div id="dropPointDetails" class$="{{_dropPointDetailsClass}}">
+                        <div id="droppoint_overlay" style="height: {{mapHeight}}px; display: block">
+                            <div id="droppoint_overlay_close" on-click="_hideDropPointDetails">
+                                <local-image img-src="assets/x.png" local-folder="gfs-checkout-widget" alt="close"></local-image>
+                            </div>
+                            <div id="droppoint_overlay_icon">
+                                <img src="{{_selectedDropPoint.providerLogo}}" local-folder="gfs-checkout-widget" class="droppoint-overlay-imageicon" width="45px" height="45px"></img>
+                            </div>
+                            <div id="droppoint_overlay_label" class="droppoint_overlay_heading">{{_selectedDropPoint.providerName}}</div>
+                            <div id="droppoint_overlay_address">
+                                <template is="dom-repeat" items="{{_selectedDropPoint.geoLocation.addressLines}}">
+                                    {{item}}<br />
+                                </template>
+                                {{_selectedDropPoint.geoLocation.town}}, {{_selectedDropPoint.Geolocation.postCode}}
+                            </div>
+                            <br />
+                            <span class="droppoint_overlay_heading p4m-opening-hours">Opening Hours</span>:
+
+                            <div id="droppoint_overlay_content">
+                                 <template is="dom-repeat" items="{{_selectedDropPoint.collectionSlots}}">
+                                    <div class="info_day"><b>{{item.collectionDate}}</b></div>
+                                    <template is="dom-repeat" items={{item.timeSlots}}>
+                                        <div class="info_time">{{item.from}} - {{item.to}}</div>
+                                    </template>
+                                </template>
+                            </div>
                         </div>
                     </div>
+                    <div id="droppoint_info" on-click="_showDropPointDetails">
+                        <template is="dom-if" if="{{_selectedDropPoint}}">
+                            <div id="b-img" class="info_box_img">
+                                 <img src="{{_selectedDropPoint.providerLogo}}" local-folder="gfs-checkout-widget" class="droppoint-overlay-imageicon" width="45px" height="45px"></img>
+                            </div>
+                            <div id="b-title">{{_selectedDropPoint.providerName}}</div>
+                            <div id="b-description">
+                                <template is="dom-repeat" items="{{_selectedDropPoint.geoLocation.addressLines}}">
+                                    {{item}}<br />
+                                </template>
+                            </div>
+                            <div id="droppoint_detail_link"> <a class="droppoint_info"> View Opening Times </a></div>
+                            <div id="b-tick">
+                                <img src="assets/tick.png" width="32px" height="32px" />
+                            </div>
+                        </template>
+                    </div>
+                    <img id='locateme' on-click="_locateMe" src='assets/locateme.png' />
+                    <div id="gfsMapCanvas"></div>
                 </div>
-                <div id="droppoint_info" on-click="_showDropPointDetails">
-                    <template is="dom-if" if="{{_selectedDropPoint}}">
-                        <div id="b-img" class="info_box_img">
-                            <local-image img-src="assets/{{_selectedDropPoint.carrierName}}.png" local-folder="gfs-checkout-widget" />
-                        </div>
-                        <div id="b-title">{{_selectedDropPoint.carrierName}}</div>
-                        <div id="b-description">{{_selectedDropPoint.Geolocation.AddressLineCollection.string}}</div>
-                        <div id="droppoint_detail_link"> <a class="droppoint_info"> View Opening Times </a></div>
-                        <div id="b-tick">
-                            <img src="assets/tick.png" width="32px" height="32px" />
-                        </div>
-                    </template>
-                </div>
-                <img id='locateme' on-click="_locateMe" src='assets/locateme.png' />
-                <div id="gfsMapCanvas"></div>
-            </div>
-        </dl> 
-    </div>  
+            </iron-accordion>
+
+        </iron-accordions>
+    </div>
 
     <input name ="shipping_method" type="radio" value="{{_selectedDropPoint.DropPointID}}" id="dropPointRadio" class="radio hidden" />
 
@@ -399,7 +436,13 @@
             },
                     
             _data: {
-                type: Object
+                type: Object,
+                value: {
+                    dayDefinite: [],
+                    dropppoints: [],
+                    links: [],
+                    nonDayDefinite: []
+                }
             },
 
             _map: {
@@ -437,12 +480,70 @@
         // This function is called as soon as the widget is ready
         ready: function()
         {
+            var initialPost = {
+                "Request": {
+                    "DateRange": {
+                        "DateFrom": "2016-11-25",
+                        "DateTo": "2016-11-30"
+                    },
+                    "Order": {
+                        "Transit": {
+                            "Recipient": {
+                                "Location": {
+                                    "CountryCode": {
+                                        "Code": "GB",
+                                        "Encoding": "ccISO_3166_1_Alpha2"
+                                    },
+                                    "Postcode": "ha87el"
+                                }
+                            }
+                        },
+                        "Value": {
+                            "CurrencyCode": "GBP",
+                            "Value": 0
+                        }
+                    },
+                    "RequestedDeliveryTypes": [
+                       "dmDropPoint","dmStandard"
+                    ],
+                    "Session": {
+                        "APIKeyID": "CL-669285A5-9C7A-44B7-A706-D7F5CFD962E8"
+                    }
+                }
+            }
+            this.$.ajaxpost.url = "http://134.213.136.69/checkout/api/ProcessCheckoutRequest";
+            this.$.ajaxpost.params = {"api_key": "CL-669285A5-9C7A-44B7-A706-D7F5CFD962E8"};
+            this.$.ajaxpost.body = initialPost;
+            this.$.ajaxpost.generateRequest();
+        },
 
-            this._processInputData(this.gfsData);           
+        _handleInitialResponse: function(e)
+        {
+            this.$.ajaxget.url = "http://134.213.136.69/checkout/" + e.detail.response;
+            //this.$.ajaxpost.params = {"api_key": "CL-669285A5-9C7A-44B7-A706-D7F5CFD962E8"};
+            //this.$.ajaxpost.body = initialPost;
+            this.$.ajaxget.generateRequest();
+        },
+
+        _handleResponse: function(e)
+        {
+            var useWebService = true; //false;
+            if (useWebService) {
+                this._data = e.detail.response;
+            }
+
+            else if (typeof(this.gfsData) === "string")
+            {
+                var unencoded = atob(this.gfsData);
+                this._data = JSON.parse(unencoded);
+            }
+
+
+            this._processInputData();
             this._setupEvents();
 
-            window.setTimeout(this._delayedInit.bind(this), 900);
-                 
+            window.setTimeout(this._delayedInit.bind(this), 5000);
+            //console.log();
         },
 
 
@@ -472,13 +573,7 @@
         
         _processInputData: function()
         {
-            if (typeof(this.gfsData) === "string")
-            {
-                var unencoded = atob(this.gfsData);
-                this._data = JSON.parse(unencoded);
-            }
-            
-            if (this._data.dayDefinite)
+            /*if (this._data.dayDefinite)
             {
                 this._data.dayDefinite.forEach((function(item)
                 {
@@ -486,15 +581,15 @@
                     var timeStampStr = tokens[tokens.length-1];
                     item.timeStamp = parseInt(timeStampStr) * 1000;
                 }).bind(this));
-            }
-            this._processDropPointData();            
+            }*/
+            this._processDropPointData();
         },
 
         _processDropPointData: function()
-        {
+        {/*
             console.log("_processDropPointData()");
             var self = this;
-            this._data.dmDropPoints.forEach(function(carrierData)
+            this._data.dropPoints.forEach(function(carrierData)
             {
                 //The API returns single items as an object instead of array. Fix this.
                 //TODO: Ensure API always returns an array
@@ -527,6 +622,7 @@
                     });
                 });
             })
+            */
         },
 
         _forceArray: function(o) {
@@ -557,10 +653,19 @@
 
         _setupEvents: function()
         {
+            return;
             //console.log('_setupEvents');
             // Accordion Section - Expand/Hide
             // -------------------------------
-            //TODO: Replace this with Polymer functions
+            var self = this;
+            var toggleAreas = document.querySelectorAll(".toggle-content");
+            if (toggleAreas) {
+                for (var i=0; i<toggleAreas.length; i++) {
+                    toggleAreas[i].addEventListener('click', function(e) {
+                        self.toggleContentArea(e.target);
+                    });
+                }
+            }
             /*jQuery(".toggle-title").click(function() {
                 jQuery(this).next(".toggle-content").slideToggle("normal");
                 jQuery(this).toggleClass('active');
@@ -569,6 +674,17 @@
             jQuery(".toggle-title #mapPostCode").click(function() {
                 event.stopImmediatePropagation();
             });*/
+        },
+
+        _toggleContentArea(contentArea) {
+            var toggleAreas = document.querySelectedAll(".toggle-content");
+            if (toggleAreas) {
+                for (var i=0; i<toggleAreas.length; i++) {
+                    toggleAreas[i].classList.remove("active");
+                    toggleAreas[i].classList.add("normal");
+                }
+            }
+            contentArea.classList.add("active");
         },
 
         _makeMap: function()
@@ -616,7 +732,7 @@
 
             var postcode = document.getElementById('shipping:postcode').value; //Improve selection method
 
-            self._map = new google.maps.Map(document.getElementById("gfsMapCanvas"), mapOptions);
+            self._map = new google.maps.Map(self.$.gfsMapCanvas, mapOptions);
 
             google.maps.event.trigger(self._map, 'resize');
 
@@ -645,25 +761,21 @@
 
             //=== Drop point markers
             var marker;
-            this._data.dmDropPoints.forEach(
-                function(carrierItem)
+            this._data.droppoints.forEach(
+                function(pointItem)
                 {
-                    carrierItem.dropPoints.forEach(function(pointItem){
-                        pointItem.carrierName = carrierItem.carrierName;
-                        var markerConfig = {
-                            position: new google.maps.LatLng(pointItem.Geolocation.Coordinates.Latitude, pointItem.Geolocation.Coordinates.Longitude),
-                            map: self._map,
-                            animation: google.maps.Animation.DROP,
-                            title: pointItem.DropPointDescription,
-                            customData: pointItem,
-                            icon: self._getMarkerIcon()
-                        };
+                    var markerConfig = {
+                        position: new google.maps.LatLng(pointItem.geoLocation.coordinates.latitude, pointItem.geoLocation.coordinates.longitude),
+                        map: self._map,
+                        animation: google.maps.Animation.DROP,
+                        title: pointItem.droppointDescription,
+                        customData: pointItem,
+                        icon: self._getMarkerIcon()
+                    };
 
-                        marker = new google.maps.Marker(markerConfig);
-                        marker.addListener('click', function(clickedMarker) {
-                            self._selectDropPoint(this);
-                        });
-
+                    marker = new google.maps.Marker(markerConfig);
+                    marker.addListener('click', function(clickedMarker) {
+                        self._selectDropPoint(this);
                     });
                 }
             );
@@ -789,7 +901,7 @@
             var self = this;
             var cheapestMethod = null;
             var preselectDay = false;
-            var items = this._data.nonDayDefinite.filter(self.isGfs);
+            var items = this._data.nonDayDefinite;//.filter(self.isGfs);
             items.forEach(function(carrier){
                 carrier.rates.forEach(function(item) {
                     if (cheapestMethod === null || (item.price < cheapestMethod.price)) {
@@ -852,7 +964,7 @@
             }
             else
             {
-                this.$$('calendar-widget').chosen = [];
+                this.$$('brick-calendar').chosen = [];
             }
         },
 
@@ -877,18 +989,13 @@
             this._data.dayDefinite.forEach(function(item)
             {
 
-                var dateStr = self._makeDateStr(new Date(item.timeStamp));
+                var dateStr = self._makeDateStr(new Date(item.deliveryDate));
                 var deliveryDate = new Date(dateStr);
                 item.dateStr = dateStr;
+                self._delive
 
-                if (self._deliveryDays[dateStr]) {
-                    item.price = 1.0;//testing
-                    self._deliveryDays[dateStr].push(item);
-                }
-                else
-                {
-                    self._deliveryDays[dateStr] = [item];
-                }
+                self._deliveryDays[dateStr] = item.rates;
+
                 if ((self._earliestDelivery == null) || deliveryDate < self._earliestDelivery) 
                 {
                     self._earliestDelivery = self._deliveryDays[dateStr];
