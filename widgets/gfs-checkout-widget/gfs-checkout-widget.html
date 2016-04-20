@@ -1,9 +1,10 @@
 <link rel="import" href="../../polymer/polymer.html" />
 <link rel="import" href="../../googlemaps/googlemaps.html" />
-<link rel="import" href="../local-image-widget/local-image.html" />
 <link rel="import" href="../../brick-calendar/dist/brick-calendar.html" />
 <link rel="import" href="../../iron-ajax/iron-ajax.html" />
 <link rel="import" href="../../iron-accordions/iron-accordions.html" />
+<link rel="import" href="../local-image-widget/local-image.html" />
+<link rel="import" href="../map-region-manager/map-region-manager.html" />
 <dom-module id="gfs-checkout">
 
   <template>
@@ -159,6 +160,7 @@
         debounce-duration="300">
     </iron-ajax>
 
+    <map-region-manager id="regionManager" />
 
     <div id="widgetContainer">
 
@@ -485,8 +487,8 @@
             var initialPost = {
                 "Request": {
                     "DateRange": {
-                        "DateFrom": "2016-11-25",
-                        "DateTo": "2016-11-30"
+                        "DateFrom": "2016-04-12",
+                        "DateTo": "2016-04-30"
                     },
                     "Order": {
                         "Transit": {
@@ -516,6 +518,7 @@
             this.$.ajaxpost.url = "http://134.213.136.69/checkout/api/ProcessCheckoutRequest";
             this.$.ajaxpost.params = {"api_key": "CL-669285A5-9C7A-44B7-A706-D7F5CFD962E8"};
             this.$.ajaxpost.body = initialPost;
+            //this.$.ajaxpost.body = initialPost;
             this.$.ajaxpost.generateRequest();
         },
 
@@ -560,7 +563,7 @@
             {
                 this._makeCalendar();
             }
-            this._preselect();
+            //this._preselect();
             
         },
         _apiKeyChanged: function(newValue, oldValue) {
@@ -814,6 +817,48 @@
             google.maps.event.addListener(self._map, 'click', function(event) {
                 self._unselectDropPoint();
             });
+
+            google.maps.event.addListener(self._map, 'bounds_changed', function(event) {
+                //console.log(JSON.stringify(event));
+                self._mapMoved();
+            });
+        },
+
+        _mapMoved: function() {
+            var self = this;
+            if (self._moveMapTimeout) {
+                window.clearTimeout(self._moveMapTimeout);
+            }
+            self._moveMapTimeout = window.setTimeout((function(){
+                self._reloadDroppoints();
+            }).bind(this), 100);
+
+        },
+
+        _reloadDroppoints: function() {
+            console.log('reloadDroppoints()');
+            var self = this;
+            //Get viewport rectangle
+            var bounds = this._map.getBounds();
+            var northEast = [ bounds.getNorthEast().lng(), bounds.getNorthEast().lat()];
+            var southWest = [ bounds.getSouthWest().lng(), bounds.getSouthWest().lat()];
+            var boxes = [];   
+            var viewPort = [northEast, southWest];     
+
+            console.log('ViewPort:', JSON.stringify(viewPort));
+            self.$.regionManager.coveredRectangles.forEach(function(rect) {
+                boxes.push(rect.toGeoBox());           
+            });
+
+            console.log('Covered rectangles:', JSON.stringify(boxes));
+            boxes = [];           
+            (self.$.regionManager.getUncoveredRectangles(viewPort)).forEach(function(rect) {
+                boxes.push(rect.toGeoBox());           
+            });
+            
+            console.log('Boxes to request:', JSON.stringify(boxes));
+            this.$.regionManager.addRegion([northEast, southWest]);
+
         },
 
         _showDropPointDetails: function() {
@@ -927,7 +972,6 @@
         _preselect: function() {
             //Find the cheapest option
             //If cheapestCalendar option, also search the calendar for the cheapest option
-            return;
             //Find cheapest standard option
             var self = this;
             var cheapestMethod = null;
@@ -940,6 +984,7 @@
                     }
                 });
             });
+            console.log("Cheapest method", cheapestMethod);
 
             if (self.allowCalendarPreselect) {
                 items = self._earliestDelivery;
@@ -1023,7 +1068,6 @@
                 var dateStr = self._makeDateStr(new Date(item.deliveryDate));
                 var deliveryDate = new Date(dateStr);
                 item.dateStr = dateStr;
-                self._delive
 
                 self._deliveryDays[dateStr] = item.rates;
 
