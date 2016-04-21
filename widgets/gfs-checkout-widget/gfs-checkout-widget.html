@@ -678,7 +678,6 @@
         _makeCalendar: function()
         {
             this.$$('brick-calendar').labels = this.calendarLabels;
-            this.$$('brick-calendar').labels = this.calendarLabels;
             this._findAllDeliveryDays();
             window.setTimeout(this._markDeliveryDays.bind(this), 500);
         },
@@ -734,6 +733,7 @@
 
                 // initial zoom level
                 zoom: self.startingZoomLevel,
+                minZoom: self.startingZoomLevel-2,
 
                 // initial center position
                 //center: position,
