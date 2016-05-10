@@ -1,8 +1,8 @@
-<link rel="import" href="../../polymer/polymer.html" />
+<!--link rel="import" href="../../polymer/polymer.html" /-->
 <link rel="import" href="../../googlemaps/googlemaps.html" />
 <link rel="import" href="../../brick-calendar/dist/brick-calendar.html" />
 <link rel="import" href="../../iron-ajax/iron-ajax.html" />
-<link rel="import" href="../../iron-accordions/iron-accordions.html" />
+<link rel="import" href="../../iron-collapse/iron-collapse.html" />
 <link rel="import" href="../local-image-widget/local-image.html" />
 <link rel="import" href="../map-region-manager/map-region-manager.html" />
 <dom-module id="gfs-checkout">
@@ -18,14 +18,14 @@
             display: none;
             z-index: 0;
         }
-    
-        #mapContainer { 
+
+        #mapContainer {
             display: block;
             position: relative;
         }
         #gfsMapCanvas {
             height: 400px;
-            top:0; 
+            top:0;
             left:0;
         }
         #gfsSidebar {
@@ -101,7 +101,7 @@
         {
             opacity: 0.0;
             transition: opacity 400ms ease-in;
-            z-index: 0;
+            z-index: 0 !important;
         }
 
         a.droppoint_info,
@@ -164,75 +164,78 @@
 
     <div id="widgetContainer">
 
-        <iron-accordions>
             <!--template is="dom-if" if="{{useStandard}}"-->
-                <iron-accordion>
-                    <div class="header">
-                        <h2>{{standardDeliveryTitle}}</h2>
-                    </div>
-                    <div class="toggle-content">
-                        <template is="dom-repeat" items="{{standardRates}}">
-                            <h3>{{item.carrierName}}</h3>
-                            <ul>
-                                <template is="dom-repeat" items="{{item.rates}}">
-                                    <li class="gfsStd">
-                                        <input name="shipping_method" type="radio" checked="{{item.selected}}" value="{{item.code}}" id="{{item.code}}" class="radio" />
-                                        <label for$="{{item.code}}">
-                                            <span class="methodname">{{item.methodTitle}}</span>
-                                            <span class="price">{{item.localizedPrice}}</span>
-                                        </label>
-                                    </li>
-                                </template>
-                            </ul>
-                        </template>
-                    </div>
-                </iron-accordion>
+            <div class="header">
+                    <input name="deliveryTypePanel" id="standardDeliveriesOption" on-click="_toggleStandardDeliveryPanelCollapse" type="radio"/><label for="standardDeliveriesOption"><h2>{{standardDeliveryTitle}}</h2></label>
+            </div>
+            <iron-collapse id="standardDeliveryPanel">
+
+                <div class="toggle-content">
+                    <template is="dom-repeat" items="{{standardRates}}">
+                        <h3>{{item.carrierName}}</h3>
+                        <ul>
+                            <template is="dom-repeat" items="{{item.rates}}">
+                                <li class="gfsStd">
+                                    <input name="shipping_method" type="radio" checked="{{item.selected}}" value="{{item.code}}" id="{{item.code}}" class="radio" />
+                                    <label for$="{{item.code}}">
+                                        <span class="methodname">{{item.methodTitle}}</span>
+                                        <span class="price">{{item.localizedPrice}}</span>
+                                    </label>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                </div>
+            </iron-collapse>
             <!--/template-->
 
             <template is="dom-if" if="{{useCalendar}}">
-                <iron-accordion>
+
                     <div class="header">
-                        <h2>{{calendarDeliveryTitle}}</h2>
+                        <input name="deliveryTypePanel" id="calendarDeliveriesOption" on-click="_toggleCalendarPanelCollapse" type="radio"/><label for="calendarDeliveriesOption"><h2>{{calendarDeliveryTitle}}</h2></label>
                     </div>
                     <div class="toggle-content gfsCalendar container">
-                        <div class="row">
-                            <div>
-                                <brick-calendar id="calendar-widget" class="gfs-checkout" controls first-weekday-num=0></brick-calendar>
-                                <!-- Clicking on a day in the calendar sets _selectedDayDeliveries -->
-                            </div>
-                            <div>
-                                <div id="calendar-delivery-options">
-                                    <h3>{{calendarDayPrompt}}</h3>
-                                    <ul class="separated">
-                                        <template is="dom-repeat" items="{{_selectedDayDeliveries}}">
-                                                              
-                                            <li>
-                                                <input 
-                                                    type="radio"
-                                                    name="shipping_method"
-                                                    value="{{item.code}}"
-                                                    id="{{item.code}}"
-                                                    class="radio"
-                                                />
-                                                <label for$="s2_method_{{item.code}}">
-                                                    <span class="gfsmethodname">{{item.methodTitle}}</span>
-                                                    <span class="price">{{currencySymbol}}{{item.price}}</span>
-                                                </label>
-                                            </li>
-
-                                        </template>
-                                    </ul>
+                        <iron-collapse id="calendarPanel">
+                            <div class="row">
+                                <div>
+                                    <brick-calendar id="calendar-widget" class="gfs-checkout" controls first-weekday-num=0></brick-calendar>
+                                    <!-- Clicking on a day in the calendar sets _selectedDayDeliveries -->
                                 </div>
-                            </div>
-                         </div>
+                                <div>
+                                    <div id="calendar-delivery-options">
+                                        <h3>{{calendarDayPrompt}}</h3>
+                                        <ul class="separated">
+                                            <template is="dom-repeat" items="{{_selectedDayDeliveries}}">
+
+                                                <li>
+                                                    <input
+                                                        type="radio"
+                                                        name="shipping_method"
+                                                        value="{{item.code}}"
+                                                        id="{{item.code}}"
+                                                        class="radio"
+                                                    />
+                                                    <label for$="s2_method_{{item.code}}">
+                                                        <span class="gfsmethodname">{{item.methodTitle}}</span>
+                                                        <span class="price">{{currencySymbol}}{{item.price}}</span>
+                                                    </label>
+                                                </li>
+
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </div>
+                             </div>
+                         </iron-collapse>
                     </div>
-                </iron-accordion>
+
             </template>
 
-            <iron-accordion opened>
-                <div class="header">
-                    <h2>{{dropPointTitle}}</h2>
-                </div>
+
+            <div class="header">
+                <input name="deliveryTypePanel" id="dropPointDeliveriesOption" on-click="_toggleDropPointPanelCollapse" type="radio"/><label for="dropPointDeliveriesOption"><h2>{{dropPointTitle}}</h2></label>
+            </div>
+            <iron-collapse id="dropPointPanel">
                 <div class="toggle-content gfsDropPoint" id="mapContainer">
 
                     <div id="dropPointDetails" class$="{{_dropPointDetailsClass}}">
@@ -275,20 +278,24 @@
                                 </template>
                             </div>
                             <div id="droppoint_detail_link"> <a class="droppoint_info"> View Opening Times </a></div>
-                            <div id="b-tick">
-                                <img src="assets/tick.png" width="32px" height="32px" />
+                            <div id="b-tick" id="droppoint_{{_selectedDropPoint.droppointId}}" on-click="_chooseDropPoint">
+                                <template is="dom-if" if="{{_selectedDropPoint.dropPointId == _chosenDropPoint.dropPointId}}">
+                                  <img src="assets/tick.png" width="32px" height="32px" />
+                                </template>
+                                <template is="dom-if" if="{{_selectedDropPoint.dropPointId !== _chosenDropPoint.dropPointId}}">
+                                  <img src="assets/blue_dot.png" width="32px" height="32px" />
+                                </template>
                             </div>
                         </template>
                     </div>
                     <img id='locateme' on-click="_locateMe" src='assets/locateme.png' />
                     <div id="gfsMapCanvas"></div>
                 </div>
-            </iron-accordion>
-
-        </iron-accordions>
+            </iron-collapse>
     </div>
 
-    <input name ="shipping_method" type="radio" value="{{_selectedDropPoint.DropPointID}}" id="dropPointRadio" class="radio hidden" />
+
+    <input name ="shipping_method" type="text" value="{{_selectedDropPoint.DropPointID}}" id="dropPointRadio" class="hidden" />
 
   </template>
 
@@ -298,13 +305,13 @@
     var DAY_MS = 1000 * 60 * 60 * 24;
     var DOW_NAMES = [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', '?'];
     var MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  
+
     // element registration
     Polymer({
         is: "gfs-checkout",
-        
+
         // add properties and methods on the element's prototype
-        
+
         properties: {
             //=== Element attributes ===//
             apiKey: {
@@ -431,13 +438,13 @@
                 type: String,
                 value: "hidden"
             },
-           
+
             _shippingRateGroups: {
                 type: Array,
                 notify: true,
                 value: []
             },
-                    
+
             _data: {
                 type: Object,
                 value: {
@@ -470,13 +477,13 @@
             _earliestDelivery: {
                 type: Object,
                 value: null
-            }           
+            }
         },
 
         listeners: {
             "datetoggleon": "_deliveryDateSelected",
             "prevmonth": "_calendarMonthChanged",
-            "nextmonth": "_calendarMonthChanged" 
+            "nextmonth": "_calendarMonthChanged"
         },
 
         // METHODS
@@ -487,8 +494,8 @@
             var initialPost = {
                 "Request": {
                     "DateRange": {
-                        "DateFrom": "2016-04-12",
-                        "DateTo": "2016-04-30"
+                        "DateFrom": "2016-05-04",
+                        "DateTo": "2016-15-15"
                     },
                     "Order": {
                         "Transit": {
@@ -504,7 +511,7 @@
                         },
                         "Value": {
                             "CurrencyCode": "GBP",
-                            "Value": 0
+                            "Value": 120
                         }
                     },
                     "RequestedDeliveryTypes": [
@@ -518,15 +525,14 @@
             this.$.ajaxpost.url = "http://134.213.136.69/checkout/api/ProcessCheckoutRequest";
             this.$.ajaxpost.params = {"api_key": "CL-669285A5-9C7A-44B7-A706-D7F5CFD962E8"};
             this.$.ajaxpost.body = initialPost;
-            //this.$.ajaxpost.body = initialPost;
+            console.log("Initial POST", new Date().getTime());
             this.$.ajaxpost.generateRequest();
         },
 
         _handleInitialResponse: function(e)
         {
+            console.log("Followup GET", new Date().getTime());
             this.$.ajaxget.url = "http://134.213.136.69/checkout/" + e.detail.response;
-            //this.$.ajaxpost.params = {"api_key": "CL-669285A5-9C7A-44B7-A706-D7F5CFD962E8"};
-            //this.$.ajaxpost.body = initialPost;
             this.$.ajaxget.generateRequest();
         },
 
@@ -544,7 +550,7 @@
             }
 
 
-            
+
             this._setupEvents();
 
             window.setTimeout(this._delayedInit.bind(this), 500);
@@ -554,17 +560,19 @@
 
         _delayedInit: function()
         {
+            console.log("_delayedInit", new Date().getTime());
             this._processInputData();
 
             if (this.useDropPoints) {
                 this._makeMap();
-            } 
+            }
             if (this.useCalendar)
             {
                 this._makeCalendar();
             }
+            console.log("_delayedInit end", new Date().getTime());
             //this._preselect();
-            
+
         },
         _apiKeyChanged: function(newValue, oldValue) {
             console.log('API Key changed to', newValue);
@@ -577,7 +585,7 @@
         isGfs : function(item){
             return item.carrierCode === 'gfs';
         },
-        
+
         _processInputData: function()
         {
             /*if (this._data.dayDefinite)
@@ -619,8 +627,8 @@
         _processNonDayDefiniteData: function()
         {
             if (this._data.nonDayDefinite.constructor === Array && this._data.nonDayDefinite.length > 0) {
-                this._data.standardRates = this._getGroupedByCarrier(this._data.nonDayDefinite[0].rates); 
-                this.standardRates = this._data.standardRates; 
+                this._data.standardRates = this._getGroupedByCarrier(this._data.nonDayDefinite[0].rates);
+                this.standardRates = this._data.standardRates;
             }
         },
 
@@ -632,9 +640,9 @@
         _processDropPointData: function()
         {
             var self = this;
-          
+
             this._data.droppoints.forEach(function(dropPointData)
-            {   
+            {
                 var dayCount = 0;
                 dropPointData.distanceInKm = (Math.round(dropPointData.DistanceInMeters/100))/10;
 
@@ -642,15 +650,18 @@
                 {
                     dayCount++;
                     if (dayCount <= 7) {
-                        
+
                         collectionSlot.collectionDateTime = self._getUtcTime(new Date(collectionSlot.collectionDate));
                         collectionSlot.day = DOW_NAMES[collectionSlot.collectionDateTime.getDay()];
 
                         collectionSlot.timeSlots.forEach(function(timeSlot) {
                             timeSlot.fromDateTime = self._getUtcTime(new Date(timeSlot.from));
-                            timeSlot.toDateTime = self._getUtcTime(new Date(timeSlot.to));                          
+                            timeSlot.toDateTime = self._getUtcTime(new Date(timeSlot.to));
                             timeSlot.fromTime = self._getTimeStr(timeSlot.fromDateTime);
                             timeSlot.toTime = self._getTimeStr(timeSlot.toDateTime);
+                            if (timeSlot.fromTime === "") {
+                              debugger;
+                            }
                         });
                     }
                 });
@@ -658,7 +669,7 @@
         },
 
         _forceArray: function(o) {
-            return ((o.constructor !== Array)?[o]:o); 
+            return ((o.constructor !== Array)?[o]:o);
         },
 
         _getUtcTime: function(d)
@@ -667,7 +678,7 @@
             return utc;
         },
 
-        _getTimeStr: function(d) 
+        _getTimeStr: function(d)
         {
             var minutes = d.getMinutes().toString().length == 1 ? '0'+d.getMinutes() : d.getMinutes();
             var hours = (d.getHours() % 12).toString();
@@ -766,8 +777,6 @@
 
             self._map = new google.maps.Map(self.$.gfsMapCanvas, mapOptions);
 
-            google.maps.event.trigger(self._map, 'resize');
-
             //=== Home marker
             geocoder = new google.maps.Geocoder();
             geocoder.geocode(
@@ -785,7 +794,7 @@
                         self._getHomeIcon();
                         new google.maps.Marker(homeMarkerConfig);
                         self._map.setCenter(homeMarkerConfig.position);
-                    } 
+                    }
                     else {
                         console.log('Google Maps API ERROR - Geocode was not successful for the following reason: ' + status);
                     }
@@ -805,7 +814,7 @@
                         customData: pointItem,
                         icon: self._getMarkerIcon()
                     };
-                    console.log(pointItem.geoLocation.coordinates.longitude, pointItem.geoLocation.coordinates.latitude);
+                    //console.log(pointItem.geoLocation.coordinates.longitude, pointItem.geoLocation.coordinates.latitude);
 
                     marker = new google.maps.Marker(markerConfig);
                     marker.addListener('click', function(clickedMarker) {
@@ -813,6 +822,9 @@
                     });
                 }
             );
+
+
+            window.setTimeout(function(){google.maps.event.trigger(self._map, 'resize');}, 100);
 
             google.maps.event.addListener(self._map, 'click', function(event) {
                 self._unselectDropPoint();
@@ -842,20 +854,20 @@
             var bounds = this._map.getBounds();
             var northEast = [ bounds.getNorthEast().lng(), bounds.getNorthEast().lat()];
             var southWest = [ bounds.getSouthWest().lng(), bounds.getSouthWest().lat()];
-            var boxes = [];   
-            var viewPort = [northEast, southWest];     
+            var boxes = [];
+            var viewPort = [northEast, southWest];
 
             console.log('ViewPort:', JSON.stringify(viewPort));
             self.$.regionManager.coveredRectangles.forEach(function(rect) {
-                boxes.push(rect.toGeoBox());           
+                boxes.push(rect.toGeoBox());
             });
 
             console.log('Covered rectangles:', JSON.stringify(boxes));
-            boxes = [];           
+            boxes = [];
             (self.$.regionManager.getUncoveredRectangles(viewPort)).forEach(function(rect) {
-                boxes.push(rect.toGeoBox());           
+                boxes.push(rect.toGeoBox());
             });
-            
+
             console.log('Boxes to request:', JSON.stringify(boxes));
             this.$.regionManager.addRegion([northEast, southWest]);
 
@@ -931,7 +943,7 @@
 
         _unselectDropPoint: function() {
             if (this._selectedDropPoint) {
-                
+
                 this._currentMarker.setAnimation(null);
                 this._currentMarker.setIcon(this._getMarkerIcon());
                 this._selectedDropPoint = null;
@@ -941,6 +953,10 @@
                 this._hideDropPointDetails();
             }
 
+        },
+
+        _toggleChooseDropPoint: function(e) {
+          
         },
 
         _locateMe: function() {
@@ -956,7 +972,7 @@
 
                         self._map.setCenter(pos);
 
-                    }, 
+                    },
                     function() {
                         handleLocationError(true, self._infoWindow, GMap.getCenter());
                     }
@@ -973,6 +989,7 @@
             //Find the cheapest option
             //If cheapestCalendar option, also search the calendar for the cheapest option
             //Find cheapest standard option
+            return;
             var self = this;
             var cheapestMethod = null;
             var preselectDay = false;
@@ -980,7 +997,7 @@
             items.forEach(function(carrier){
                 carrier.rates.forEach(function(item) {
                     if (cheapestMethod === null || (item.price < cheapestMethod.price)) {
-                        cheapestMethod = item;  
+                        cheapestMethod = item;
                     }
                 });
             });
@@ -1019,17 +1036,17 @@
         },
 
         _makeDateStr: function(d)
-        { 
+        {
             function pad(n, padSize) {
                 var str = n.toString();
                 var padZeros = (new Array(padSize)).join('0');
                 return (padZeros + str).substr(-padSize);
-            } 
-            return ( 
+            }
+            return (
               pad(d.getFullYear(), 4) + '-' +
               pad(d.getMonth() + 1, 2) + '-' +
               pad(d.getDate(d), 2)
-            );            
+            );
         },
 
         _deliveryDateSelected: function(e)
@@ -1055,12 +1072,12 @@
             {
                 return null;
             }
-            
+
         },
 
         _findAllDeliveryDays: function()
         {
-            //Make an index of delivery days  
+            //Make an index of delivery days
             var self = this;
             this._data.dayDefinite.forEach(function(item)
             {
@@ -1071,7 +1088,7 @@
 
                 self._deliveryDays[dateStr] = item.rates;
 
-                if ((self._earliestDelivery == null) || deliveryDate < self._earliestDelivery) 
+                if ((self._earliestDelivery == null) || deliveryDate < self._earliestDelivery)
                 {
                     self._earliestDelivery = self._deliveryDays[dateStr];
                 }
@@ -1095,8 +1112,34 @@
         _calendarMonthChanged: function(e)
         {
             this._markDeliveryDays();
+        },
+
+        _toggleCollapse: function(id) {
+            //If I am open, close everyone
+            //If I am closed, open me and close everyone
+            var myElement = this.$$('#' + id);
+            var collapseElements = Polymer.dom(this.root).querySelectorAll('iron-collapse');
+            var myState = myElement.opened;
+            collapseElements.forEach(function(item) {
+                item.opened = false;
+            });
+            myElement.opened = !myState;
+
+        },
+
+        _toggleCalendarPanelCollapse: function(e) {
+            this._toggleCollapse('calendarPanel');
+        },
+
+        _toggleDropPointPanelCollapse: function(e) {
+            this._toggleCollapse('dropPointPanel');
+        },
+
+        _toggleStandardDeliveryPanelCollapse: function(e) {
+            this._toggleCollapse('standardDeliveryPanel');
         }
-          
+
     });
-  </script>      
+  </script>
+        }
 </dom-module>
