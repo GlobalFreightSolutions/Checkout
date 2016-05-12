@@ -1,10 +1,10 @@
-<!--link rel="import" href="../../polymer/polymer.html" /-->
-<link rel="import" href="../../googlemaps/googlemaps.html" />
+<link rel="import" href="../../polymer/polymer.html" />
 <link rel="import" href="../../brick-calendar/dist/brick-calendar.html" />
 <link rel="import" href="../../iron-ajax/iron-ajax.html" />
 <link rel="import" href="../../iron-collapse/iron-collapse.html" />
 <link rel="import" href="../local-image-widget/local-image.html" />
 <link rel="import" href="../map-region-manager/map-region-manager.html" />
+<link rel="stylesheet" type="text/css" href="./custom.css" />
 <dom-module id="gfs-checkout">
 
   <template>
@@ -13,7 +13,6 @@
         div, span { font-family: "Raleway", "Helvetica Neue", Verdana, Arial, sans-serif; }
         .toggle-title{ width: 100%; cursor: pointer; }
         .toggle-content{ margin-top: 10px; margin-bottom: 10px; }
-
         .hidden {
             display: none;
             z-index: 0;
@@ -89,6 +88,42 @@
         {
             text-align:left;
         }
+
+        #b-tick
+        {
+            display: block;
+            height: 32px;
+            width: 32px;
+        }
+
+        #b-tick.notchosen
+        {
+            background-image: url('assets/tick.png')
+        }
+
+        #b-tick.chosen
+        {
+            background-image: url('assets/tick_on.png')
+        }
+
+        .choose-droppoint
+        {
+            background-color: #E0E0E0;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+
+        .choose-droppoint.chosen {
+             background-color: #4CAF50; /* Green */
+        }
+
+
+
 
         .fade-in
         {
@@ -263,6 +298,7 @@
                                         <div class="info_time">{{item.fromTime}} - {{item.toTime}}</div>
                                     </template>
                                 </template>
+                                <button on-click="_toggleChooseDropPoint" class$="button choose-droppoint {{_dropPointTickClass}}">{{_dropPointChooseBtnText}}</button>
                             </div>
                         </div>
                     </div>
@@ -278,13 +314,7 @@
                                 </template>
                             </div>
                             <div id="droppoint_detail_link"> <a class="droppoint_info"> View Opening Times </a></div>
-                            <div id="b-tick" id="droppoint_{{_selectedDropPoint.droppointId}}" on-click="_chooseDropPoint">
-                                <template is="dom-if" if="{{_selectedDropPoint.dropPointId == _chosenDropPoint.dropPointId}}">
-                                  <img src="assets/tick.png" width="32px" height="32px" />
-                                </template>
-                                <template is="dom-if" if="{{_selectedDropPoint.dropPointId !== _chosenDropPoint.dropPointId}}">
-                                  <img src="assets/blue_dot.png" width="32px" height="32px" />
-                                </template>
+                            <div id="b-tick" id="droppoint_{{_selectedDropPoint.droppointId}}" class$="{{_dropPointTickClass}}" on-click="_toggleChooseDropPoint">
                             </div>
                         </template>
                     </div>
@@ -366,6 +396,11 @@
             // To override the default values shown below, simply pass through the attributes name, with camel caps converted to dashed lower case:
             // e.g: 'dropPointTitle' would be set by:
             // <gfs-checkout drop-point-title="Your text goes here" ...
+
+            initialAddress: {
+              type: String,
+              value: 'SE6 1EJ'
+            },
 
             dropPointTitle: {
                 type: String,
@@ -464,6 +499,16 @@
                 type: Object
             },
 
+            _dropPointTickClass: {
+                type: String,
+                value: "notchosen"
+            },
+
+            _dropPointChooseBtnText: {
+                type: String,
+                value: "Choose"
+            },
+
             _infoWindow: {
                 type: Object
             },
@@ -522,7 +567,7 @@
                     }
                 }
             }
-            this.$.ajaxpost.url = "http://134.213.136.69/checkout/api/ProcessCheckoutRequest";
+            this.$.ajaxpost.url = "///134.213.136.69/checkout/api/ProcessCheckoutRequest";
             this.$.ajaxpost.params = {"api_key": "CL-669285A5-9C7A-44B7-A706-D7F5CFD962E8"};
             this.$.ajaxpost.body = initialPost;
             console.log("Initial POST", new Date().getTime());
@@ -532,7 +577,7 @@
         _handleInitialResponse: function(e)
         {
             console.log("Followup GET", new Date().getTime());
-            this.$.ajaxget.url = "http://134.213.136.69/checkout/" + e.detail.response;
+            this.$.ajaxget.url = "///134.213.136.69/checkout/" + e.detail.response;
             this.$.ajaxget.generateRequest();
         },
 
@@ -773,14 +818,14 @@
                 styles: [{"featureType": "poi","elementType": "labels","stylers": [{"visibility": "off"}]}]
             };
 
-            var postcode = document.getElementById('shipping:postcode').value; //Improve selection method
+            //var postcode = document.getElementById('shipping:postcode').value; //Improve selection method
 
             self._map = new google.maps.Map(self.$.gfsMapCanvas, mapOptions);
 
             //=== Home marker
             geocoder = new google.maps.Geocoder();
             geocoder.geocode(
-                {'address': postcode },
+                {'address': self.initialAddress },
                 function(results, status) {
                     if (status == google.maps.GeocoderStatus.OK) {
                         //self._map.setCenter(results[0].geometry.location);
@@ -955,8 +1000,23 @@
 
         },
 
-        _toggleChooseDropPoint: function(e) {
-          
+        _toggleChooseDropPoint: function () {
+            if (this._isChosenDropPoint(this._selectedDropPoint.dropPointId)) {
+                this._chosenDropPoint = null;
+                this._dropPointTickClass = "notchosen";
+                this._dropPointChooseBtnText = "Choose";
+                console.log('Not chosen');
+            }
+            else {
+                this._chosenDropPoint = this._selectedDropPoint;
+                this._dropPointTickClass = "chosen";
+                this._dropPointChooseBtnText = "Chosen";
+                console.log('Chosen');
+            }
+        },
+
+        _isChosenDropPoint: function (dropPointId) {
+            return (this._chosenDropPoint && (dropPointId == this._chosenDropPoint.dropPointId));
         },
 
         _locateMe: function() {
@@ -1141,5 +1201,4 @@
 
     });
   </script>
-        }
 </dom-module>
