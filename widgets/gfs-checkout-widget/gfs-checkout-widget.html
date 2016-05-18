@@ -62,30 +62,16 @@
             float: left;
         }
 
+        #droppoint_overlay .dp-day-name {
+            color: white;
+        }
+
         #droppoint_overlay_close
         {
             position: absolute;
             top: 32px;
             right: 32px;
         }
-
-        #b-tick
-        {
-            display: block;
-            height: 32px;
-            width: 32px;
-        }
-
-        #b-tick.notchosen
-        {
-            background-image: url('assets/tick.png')
-        }
-
-        #b-tick.chosen
-        {
-            background-image: url('assets/tick_on.png')
-        }
-
 
         .fade-in
         {
@@ -229,29 +215,22 @@
                             <div id="droppoint_overlay_close" on-click="_hideDropPointDetails">
                                 <local-image img-src="assets/x.png" local-folder="gfs-checkout-widget" alt="close"></local-image>
                             </div>
-                            <gfs-droppoint droppoint-data="{{_selectedDropPoint}}"></gfs-droppoint>                          
+                            <gfs-droppoint droppoint-data="{{_selectedDropPoint}}" show-opening-hours="true"></gfs-droppoint>                          
                         </div>
                     </div>
                     <div id="droppoint_info" on-click="_showDropPointDetails">
                         <template is="dom-if" if="{{_selectedDropPoint}}">
-                            <div id="b-img" class="info_box_img">
+                            <gfs-droppoint droppoint-data="{{_selectedDropPoint}}" button-type="tick"></gfs-droppoint>
+                            <!--div id="b-img" class="info_box_img">
                                  <img src="{{_selectedDropPoint.providerLogo}}" local-folder="gfs-checkout-widget" class="droppoint-overlay-imageicon" width="45px" height="45px"></img>
-                            </div>
+                            </!--div>
                             <div id="b-title">{{_selectedDropPoint.providerName}}</div>
                             <div id="b-description">
                                 <template is="dom-repeat" items="{{_selectedDropPoint.geoLocation.addressLines}}">
                                     {{item}}<br />
                                 </template>
-                               </div>
-                            <div id="droppoint_detail_link"> <a class="droppoint_info"> View Opening Times </a></div>
-
-                            <template is="dom-if" if="{{_selectedDropPoint.notChosen}}">
-                                <div id="b-tick" class$="notchosen" on-click="_toggleChooseDropPoint"></div>
-                            </template>
-                            <template is="dom-if" if="{{_selectedDropPoint.chosen}}">
-                                <div id="b-tick" class$="chosen" on-click="_toggleChooseDropPoint"></div>
-                            </template>
-                            
+                               </div-->
+                            <div id="droppoint_detail_link"> <a class="droppoint_info"> View Opening Times </a></div>                       
                         </template>
                     </div>
                     <img id='locateme' on-click="_locateMe" src='assets/locateme.png' />
@@ -261,22 +240,8 @@
                 <div-- id="dropPointListContainer">
                     <h2>Drop Points</h2>
                     <template id="dropPointList" is="dom-repeat" items="{{_dropPoints}}">
-                        <gfs-droppoint droppoint-data="{{item}}"></gfs-droppoint>
-                        <!--div class="droppoint-list-item" on-click="_chooseDropPointListItem">
-                            <h5>{{item.droppointDescription}}</h5>
-                            <img src="{{item.providerLogo}}" class="droppoint-overlay-imageicon" width="45" height="45"></img>
-                            <div class="droppoint_overlay_heading">{{item.providerName}}</div>
-                            <template is="dom-repeat" as="addressLine" items="{{item.geoLocation.addressLines}}">
-                                {{addressLine}}
-                                <br />
-                            </template>
-                            {{item.geoLocation.town}}, {{item.geoLocation.postCode}}
-                            <template is="dom-if" if="{{_isChosenDropPoint(item)}}">
-                                CHOSEN
-                            </template>
-
-                            <hr />
-                        </div-->   
+                        <gfs-droppoint show-opening-hours="false" button-type="tick" droppoint-data="{{item}}"></gfs-droppoint>
+ 
                     </template>
  
                 </div>
@@ -456,8 +421,7 @@
 
             _dropPoints: {
                 type: Array,
-                notify: true,
-                observer: 'dropPointChanged'
+                notify: true
             },
 
             _map: {
@@ -567,7 +531,6 @@
                 this._data = JSON.parse(unencoded);
             }
             this._dropPoints = this._data.droppoints;
-            this._setupEvents();
 
             window.setTimeout(this._delayedInit.bind(this), 500);
             //console.log();
@@ -615,7 +578,6 @@
             }*/
             this._processDayDefiniteData();
             this._processNonDayDefiniteData();
-            this._processDropPointData();
         },
 
         _getGroupedByCarrier: function(rateArray)
@@ -653,36 +615,6 @@
 
         },
 
-        _processDropPointData: function()
-        {
-            var self = this;
-
-            this._dropPoints.forEach(function(dropPointData)
-            {
-                /*
-                var dayCount = 0;
-                dropPointData.distanceInKm = (Math.round(dropPointData.DistanceInMeters/100))/10;
-
-                dropPointData.collectionSlots.forEach(function(collectionSlot)
-                {
-                    dayCount++;
-                    if (dayCount <= 7) {
-
-                        collectionSlot.collectionDateTime = self._getUtcTime(new Date(collectionSlot.collectionDate));
-                        collectionSlot.day = DOW_NAMES[collectionSlot.collectionDateTime.getDay()];
-
-                        collectionSlot.timeSlots.forEach(function(timeSlot) {
-                            timeSlot.fromDateTime = self._getUtcTime(new Date(timeSlot.from));
-                            timeSlot.toDateTime = self._getUtcTime(new Date(timeSlot.to));
-                            timeSlot.fromTime = self._getTimeStr(timeSlot.fromDateTime);
-                            timeSlot.toTime = self._getTimeStr(timeSlot.toDateTime);
-                        });
-                    }
-                });
-                */
-            });
-        },
-
         _forceArray: function(o) {
             return ((o.constructor !== Array)?[o]:o);
         },
@@ -694,7 +626,7 @@
             this._findAllDeliveryDays();
             window.setTimeout(this._markDeliveryDays.bind(this), 500);
         },
-
+        /*
         _setupEvents: function()
         {
             return;
@@ -710,16 +642,8 @@
                     });
                 }
             }
-            /*jQuery(".toggle-title").click(function() {
-                jQuery(this).next(".toggle-content").slideToggle("normal");
-                jQuery(this).toggleClass('active');
-            });
-
-            jQuery(".toggle-title #mapPostCode").click(function() {
-                event.stopImmediatePropagation();
-            });*/
-        },
-
+        },*/
+        /*
         _toggleContentArea(contentArea) {
             var toggleAreas = document.querySelectedAll(".toggle-content");
             if (toggleAreas) {
@@ -729,7 +653,7 @@
                 }
             }
             contentArea.classList.add("active");
-        },
+        },*/
 
         _makeMap: function()
         {
@@ -880,14 +804,6 @@
             this._dropPointDetailsClass = "fade-in";
         },
 
-        _droppointChosen: function (e) {
-            if (!this._chosenDropPoint || (e.detail.droppointId !== this._chosenDropPoint.droppointId)) {
-                if (this._chosenDropPoint) {
-                    this._chosenDropPoint.chosen = false;
-                }
-                this._chosenDropPoint = e.detail;
-            } 
-        },
 
         _hideDropPointDetails: function() {
             this._dropPointDetailsClass = "fade-out";
@@ -938,6 +854,7 @@
             this._unselectDropPoint();
 
             this._selectedDropPoint = marker.customData;
+
             this._currentMarker = marker;
             this._infoWindow.open(this._map, this._currentMarker);
 
@@ -966,66 +883,17 @@
 
         },
 
-        //TODO: Make more modular way of choosing
-
-        _oldchooseDropPointListItem: function (e) {
-            if (this._chosenDropPoint) {
-                this._chosenDropPoint.chosen = null;
-            }
-            this._chosenDropPoint = this._dropPoints[Math.floor(Math.random() * 10)];// e.model.item;//eeeeeee
-            this._chosenDropPoint.chosen = "YES";
-           
-        },
-
-        _chooseDropPointListItem: function (e) {
-            var item = this.$.dropPointList.itemForElement(e.target);
-            item.chosen = !item.chosen;
-            if (item.chosen) {
-                item.hello = "I CHOSE YOU";
-            }
-            else {
-                item.hello = "";
-            }
-            this.$.dropPointSelector.select(item);
-            this.$.dropPointList.render();
-        },
-
-        /*
-
-        _toggleChooseDropPoint: function () {
-            if (this._isChosenDropPoint(this._selectedDropPoint.dropPointId)) {
-                this._chosenDropPoint.chosen = false;
-                this._chosenDropPoint.notChosen = true;
-                this._chosenDropPoint = null;
-                //this._dropPointTickClass = "notchosen";
-                //this._dropPointChooseBtnText = "Choose";
-                console.log('Not chosen');
-            }
-            else {
-                this._chosenDropPoint = this._selectedDropPoint;
+        _droppointChosen: function (e) {
+            //If a drop point has not yet been chosen, or the current chosen drop point is different,
+            if (!this._chosenDropPoint || (e.detail.droppointData.droppointId !== this._chosenDropPoint.droppointData.droppointId)) {
+                if (this._chosenDropPoint) {
+                    this._chosenDropPoint.chosen = false;
+                }
+                this._chosenDropPoint = e.detail;
                 this._chosenDropPoint.chosen = true;
-                this._chosenDropPoint.notChosen = false;
-                //this._dropPointTickClass = "chosen";
-                //this._dropPointChooseBtnText = "Chosen";
-                console.log('Chosen');
-            }
-        },*/
-
-        _isChosenDropPointId: function (dropPointId) {
-
-            return (this._chosenDropPoint && (dropPointId == this._chosenDropPoint.dropPointId));
-        },
-
-        _isChosenDropPoint: function (dropPoint) {
-            //return Math.random() < 0.3;
-            if (this.chosen.indexOf(dropPoint) > -1) {
-                return true;
-            }
-            else
-            {
-                return false;
             }
         },
+
 
         _locateMe: function() {
             var self = this;
@@ -1205,10 +1073,6 @@
 
         _toggleStandardDeliveryPanelCollapse: function(e) {
             this._toggleCollapse('standardDeliveryPanel');
-        },
-
-        dropPointChanged: function(oldVal, newVal) {
-            console.log(oldVal, newVal);
         }
 
     });
