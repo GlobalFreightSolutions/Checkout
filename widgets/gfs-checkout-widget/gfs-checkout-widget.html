@@ -6,6 +6,7 @@
 <link rel="import" href="../local-image-widget/local-image.html" />
 <link rel="import" href="../gfs-droppoint/gfs-droppoint.html" />
 <link rel="import" href="../map-region-manager/map-region-manager.html" />
+<link rel="import" href="../../paper-toggle-button/paper-toggle-button.html" />
 <link rel="stylesheet" type="text/css" href="./custom.css" />
 <dom-module id="gfs-checkout">
 
@@ -206,8 +207,12 @@
                 <input name="deliveryTypePanel" id="dropPointDeliveriesOption" on-click="_toggleDropPointPanelCollapse" type="radio"/><label for="dropPointDeliveriesOption"><h2>{{dropPointTitle}}</h2></label>
             </div>
             <iron-collapse id="dropPointPanel">
-                <button class="button" on-click="_showDropPointMap" >Map</button>
-                <button class="button" on-click="_showDropPointList">List</button>
+                
+                
+                <i class="fa fa-bars" on-click="_showDropPointMap">List</i>
+                <paper-toggle-button on-change="_showDropPointsView"></paper-toggle-button>
+                <i class="fa fa-map-marker" on-click="_showDropPointMap">Map</i>
+
                 <div class="toggle-content gfsDropPoint" id="mapContainer">
 
                     <div id="dropPointDetails" class$="{{_dropPointDetailsClass}}">
@@ -221,15 +226,6 @@
                     <div id="droppoint_info" on-click="_showDropPointDetails">
                         <template is="dom-if" if="{{_selectedDropPoint}}">
                             <gfs-droppoint droppoint-data="{{_selectedDropPoint}}" button-type="tick"></gfs-droppoint>
-                            <!--div id="b-img" class="info_box_img">
-                                 <img src="{{_selectedDropPoint.providerLogo}}" local-folder="gfs-checkout-widget" class="droppoint-overlay-imageicon" width="45px" height="45px"></img>
-                            </!--div>
-                            <div id="b-title">{{_selectedDropPoint.providerName}}</div>
-                            <div id="b-description">
-                                <template is="dom-repeat" items="{{_selectedDropPoint.geoLocation.addressLines}}">
-                                    {{item}}<br />
-                                </template>
-                               </div-->
                             <div id="droppoint_detail_link"> <a class="droppoint_info"> View Opening Times </a></div>                       
                         </template>
                     </div>
@@ -464,9 +460,9 @@
             "nextmonth": "_calendarMonthChanged",
             "droppointChosen": "_droppointChosen"
         },
-        observers: [
+        /*observers: [
             'dropPointChanged(_dropPoints.*)'
-        ],
+        ],*/
 
         // METHODS
 
@@ -476,8 +472,8 @@
             var initialPost = {
                 "Request": {
                     "DateRange": {
-                        "DateFrom": "2016-05-16",
-                        "DateTo": "2016-05-20"
+                        "DateFrom": "2016-05-20",
+                        "DateTo": "2016-05-27"
                     },
                     "Order": {
                         "Transit": {
@@ -626,34 +622,6 @@
             this._findAllDeliveryDays();
             window.setTimeout(this._markDeliveryDays.bind(this), 500);
         },
-        /*
-        _setupEvents: function()
-        {
-            return;
-            //console.log('_setupEvents');
-            // Accordion Section - Expand/Hide
-            // -------------------------------
-            var self = this;
-            var toggleAreas = document.querySelectorAll(".toggle-content");
-            if (toggleAreas) {
-                for (var i=0; i<toggleAreas.length; i++) {
-                    toggleAreas[i].addEventListener('click', function(e) {
-                        self.toggleContentArea(e.target);
-                    });
-                }
-            }
-        },*/
-        /*
-        _toggleContentArea(contentArea) {
-            var toggleAreas = document.querySelectedAll(".toggle-content");
-            if (toggleAreas) {
-                for (var i=0; i<toggleAreas.length; i++) {
-                    toggleAreas[i].classList.remove("active");
-                    toggleAreas[i].classList.add("normal");
-                }
-            }
-            contentArea.classList.add("active");
-        },*/
 
         _makeMap: function()
         {
@@ -749,9 +717,6 @@
                 }
             );
 
-
-            window.setTimeout(function(){google.maps.event.trigger(self._map, 'resize');}, 100);
-
             google.maps.event.addListener(self._map, 'click', function(event) {
                 self._unselectDropPoint();
             });
@@ -804,6 +769,14 @@
             this._dropPointDetailsClass = "fade-in";
         },
 
+        _showDropPointsView: function() {
+            if (this.$.toggleDropPointsView.checked) {
+                console.log("Display list");
+            }
+            else {
+                console.log("Display map");
+            }
+        },
 
         _hideDropPointDetails: function() {
             this._dropPointDetailsClass = "fade-out";
@@ -1053,6 +1026,7 @@
         _toggleCollapse: function(id) {
             //If I am open, close everyone
             //If I am closed, open me and close everyone
+            var self = this;
             var myElement = this.$$('#' + id);
             var collapseElements = Polymer.dom(this.root).querySelectorAll('iron-collapse');
             var myState = myElement.opened;
@@ -1060,6 +1034,7 @@
                 item.opened = false;
             });
             myElement.opened = !myState;
+            window.setTimeout(function () { google.maps.event.trigger(self._map, 'resize'); }, 100);
 
         },
 
