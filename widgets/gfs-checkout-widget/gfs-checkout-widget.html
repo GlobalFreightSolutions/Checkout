@@ -74,6 +74,11 @@
             right: 32px;
         }
 
+        .toggle-label {
+            display: inline-block;
+            font-size: 18px;
+        }
+
         .fade-in
         {
             opacity: 0.8;
@@ -87,6 +92,16 @@
             transition: opacity 400ms ease-in;
             z-index: 0 !important;
         }
+
+         paper-toggle-button.gfs-toggle {
+            display: inline-block;
+            --paper-toggle-button-checked-bar-color: #909090;
+            --paper-toggle-button-checked-button-color: #909090;
+            --paper-toggle-button-checked-ink-color: #909090;
+            --paper-toggle-button-unchecked-bar-color: #909090;
+            --paper-toggle-button-unchecked-button-color: #909090;
+            --paper-toggle-button-unchecked-ink-color: #909090;
+         }
 
         a.droppoint_info,
         a.droppoint_info:visited,
@@ -208,12 +223,13 @@
             </div>
             <iron-collapse id="dropPointPanel">
                 
-                
-                <i class="fa fa-bars" on-click="_showDropPointMap">List</i>
-                <paper-toggle-button on-change="_showDropPointsView"></paper-toggle-button>
-                <i class="fa fa-map-marker" on-click="_showDropPointMap">Map</i>
+                <div id="toggleDropPointsViewControls">                
+                    <div class="toggle-label">List&nbsp;<i class="fa fa-ellipsis-v"></i></div>
+                    <paper-toggle-button id="toggleDropPointsView" class="gfs-toggle" on-change="_showDropPointsView"></paper-toggle-button>
+                    <div class="toggle-label"><i class="fa fa-map-marker"></i>&nbsp;Map</div>
+                </div>
 
-                <div class="toggle-content gfsDropPoint" id="mapContainer">
+                <div class="gfsDropPoint" id="mapContainer">
 
                     <div id="dropPointDetails" class$="{{_dropPointDetailsClass}}">
                         <div id="droppoint_overlay" style="height: {{mapHeight}}px; display: block">
@@ -233,7 +249,7 @@
                     <div id="gfsMapCanvas"></div>
                 </div>
                 <array-selector id="dropPointSelector" items="{{_dropPoints}}" selected="{{chosen}}" multi="false"></array-selector>
-                <div-- id="dropPointListContainer">
+                <div id="dropPointListContainer">
                     <h2>Drop Points</h2>
                     <template id="dropPointList" is="dom-repeat" items="{{_dropPoints}}">
                         <gfs-droppoint show-opening-hours="false" button-type="tick" droppoint-data="{{item}}"></gfs-droppoint>
@@ -472,8 +488,8 @@
             var initialPost = {
                 "Request": {
                     "DateRange": {
-                        "DateFrom": "2016-05-20",
-                        "DateTo": "2016-05-27"
+                        "DateFrom": "2016-05-30",
+                        "DateTo": "2016-06-15"
                     },
                     "Order": {
                         "Transit": {
@@ -771,10 +787,12 @@
 
         _showDropPointsView: function() {
             if (this.$.toggleDropPointsView.checked) {
-                console.log("Display list");
+                this.$.dropPointListContainer.classList.remove('hidden');
+                this.$.mapContainer.classList.add('hidden');
             }
             else {
-                console.log("Display map");
+                this.$.dropPointListContainer.classList.add('hidden');
+                this.$.mapContainer.classList.remove('hidden');
             }
         },
 

@@ -78,5 +78,6 @@ gfs-checkout ul.separated li {
 	width: 29px!important;
 	height: 29px!important;
 }
-
-
+.test {
+    color: red;
+}
