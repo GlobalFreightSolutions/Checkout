@@ -150,19 +150,25 @@
 
             ready: function()
             {             
-                var dayCount = 0;
+                
                 var self = this;
-                this.chosen = this.droppointData.chosen;
-                this.droppointId = this.droppointData.droppointId;
+                this.initData();
                 this.isTickButton = (this.buttonType === "tick");
                 this.isStandardButton = !this.isTickButton;
 
                 window.addEventListener('droppointChosen', this.onDroppointChosen.bind(this), false);
                 window.addEventListener('droppointUnchosen', this.onDroppointUnchosen.bind(this), false);
 
+            },
+
+            initData: function() {
+                //this.chosen = this.droppointData.chosen;
+                this.droppointId = this.droppointData.droppointId;
                 if (this.droppointData && this.droppointData.collectionSlots) {
                     this.droppointData.distanceInKm = (Math.round(this.droppointData.DistanceInMeters / 100)) / 10;
 
+                    var dayCount = 0;
+                    var self = this;
                     this.droppointData.collectionSlots.forEach(function (collectionSlot) {
                         dayCount++;
                         if (dayCount <= 7) {
@@ -182,7 +188,7 @@
             },
 
             onDroppointChosen: function(e) {
-                if (e.detail.droppointData.droppointId !== this.droppointData.droppointId) {
+                if (this.chosen && e.detail.droppointData.droppointId !== this.droppointData.droppointId) {
                     this.chosen = false;
                 }
                 else if (!this.chosen) {
@@ -191,7 +197,7 @@
             },
 
             onDroppointUnchosen: function (e) {
-                if (e.detail.droppointData.droppointId == this.droppointData.droppointId) {
+                if (this.chosen && e.detail.droppointData.droppointId == this.droppointData.droppointId) {
                     this.chosen = false;
                 }
             },
@@ -212,6 +218,7 @@
                     this.buttonClass = "unchosen";
                     this.buttonText = "Choose";
                 }
+                this.initData();
             },
 
             toggleChooseDropPoint: function()

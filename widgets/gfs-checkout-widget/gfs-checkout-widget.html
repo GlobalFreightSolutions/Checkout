@@ -222,8 +222,8 @@
                 <input name="deliveryTypePanel" id="dropPointDeliveriesOption" on-click="_toggleDropPointPanelCollapse" type="radio"/><label for="dropPointDeliveriesOption"><h2>{{dropPointTitle}}</h2></label>
             </div>
             <iron-collapse id="dropPointPanel">
-                
-                <div id="toggleDropPointsViewControls">                
+
+                <div id="toggleDropPointsViewControls">
                     <div class="toggle-label">List&nbsp;<i class="fa fa-ellipsis-v"></i></div>
                     <paper-toggle-button id="toggleDropPointsView" class="gfs-toggle" on-change="_showDropPointsView"></paper-toggle-button>
                     <div class="toggle-label"><i class="fa fa-map-marker"></i>&nbsp;Map</div>
@@ -236,15 +236,15 @@
                             <div id="droppoint_overlay_close" on-click="_hideDropPointDetails">
                                 <local-image img-src="assets/x.png" local-folder="gfs-checkout-widget" alt="close"></local-image>
                             </div>
-                            <gfs-droppoint droppoint-data="{{_selectedDropPoint}}" show-opening-hours="true"></gfs-droppoint>                          
+                            <gfs-droppoint id="overlay-droppoint" droppoint-data="{{_selectedDropPoint}}" show-opening-hours="true"></gfs-droppoint>
                         </div>
                     </div>
-                    <div id="droppoint_info" on-click="_showDropPointDetails">
-                        <template is="dom-if" if="{{_selectedDropPoint}}">
-                            <gfs-droppoint droppoint-data="{{_selectedDropPoint}}" button-type="tick"></gfs-droppoint>
-                            <div id="droppoint_detail_link"> <a class="droppoint_info"> View Opening Times </a></div>                       
-                        </template>
-                    </div>
+                    <template is="dom-if" if="{{_selectedDropPoint}}">
+                        <div id="droppoint_info" on-click="_showDropPointDetails">
+                                <gfs-droppoint id="infobox-droppoint" droppoint-data="{{_selectedDropPoint}}" button-type="tick"></gfs-droppoint>
+                                <div id="droppoint_detail_link"> <a class="droppoint_info"> View Opening Times </a></div>
+                        </div>
+                    </template>
                     <img id='locateme' on-click="_locateMe" src='assets/locateme.png' />
                     <div id="gfsMapCanvas"></div>
                 </div>
@@ -253,9 +253,9 @@
                     <h2>Drop Points</h2>
                     <template id="dropPointList" is="dom-repeat" items="{{_dropPoints}}">
                         <gfs-droppoint show-opening-hours="false" button-type="tick" droppoint-data="{{item}}"></gfs-droppoint>
- 
+
                     </template>
- 
+
                 </div>
             </iron-collapse>
     </div>
@@ -404,7 +404,7 @@
             _selectedDropPoint: {
                 type: Object
             },
-            
+
             _chosenDropPoint: {
                 type: Object
             },
@@ -467,6 +467,10 @@
             _earliestDelivery: {
                 type: Object,
                 value: null
+            },
+
+            _infoBoxDroppoint: {
+                type: Object
             }
         },
 
@@ -474,7 +478,8 @@
             "datetoggleon": "_deliveryDateSelected",
             "prevmonth": "_calendarMonthChanged",
             "nextmonth": "_calendarMonthChanged",
-            "droppointChosen": "_droppointChosen"
+            "droppointChosen": "_droppointChosen",
+            "droppointUnchosen": "_droppointUnchosen"
         },
         /*observers: [
             'dropPointChanged(_dropPoints.*)'
@@ -489,7 +494,7 @@
                 "Request": {
                     "DateRange": {
                         "DateFrom": "2016-05-30",
-                        "DateTo": "2016-06-15"
+                        "DateTo": "2016-06-06"
                     },
                     "Order": {
                         "Transit": {
@@ -516,6 +521,10 @@
                     }
                 }
             }
+            var now = new Date();
+            var week = new Date(new Date().setDate(now.getDate() + 7));
+            initialPost.Request.DateRange.DateFrom = this._makeDateStr(now);
+            initialPost.Request.DateRange.DateTo = this._makeDateStr(week);
             this.$.ajaxpost.url = "///134.213.136.69/checkout/api/ProcessCheckoutRequest";
             this.$.ajaxpost.params = {"api_key": "CL-669285A5-9C7A-44B7-A706-D7F5CFD962E8"};
             this.$.ajaxpost.body = initialPost;
@@ -646,6 +655,7 @@
             var home = null;
             var geocoder = null;
 
+            //self._infoBoxDroppoint = self.$$('#infobox-droppoint');
             self._infoWindow = new google.maps.InfoWindow({content: self.$.droppoint_info});
             //var position = new google.maps.LatLng(self.startingLatitude, self.startingLongitude);
 
@@ -845,6 +855,8 @@
             this._unselectDropPoint();
 
             this._selectedDropPoint = marker.customData;
+            //this._infoBoxDroppoint.initData();
+            //this.$$('#infobox-droppoint').initData();
 
             this._currentMarker = marker;
             this._infoWindow.open(this._map, this._currentMarker);
@@ -883,6 +895,11 @@
                 this._chosenDropPoint = e.detail;
                 this._chosenDropPoint.chosen = true;
             }
+        },
+
+        _droppointUnchosen: function (e) {
+            //If a drop point has not yet been chosen, or the current chosen drop point is different,
+            this._chosenDropPoint = null;
         },
 
 
