@@ -48,6 +48,7 @@
                 font-size: 11px;
                 margin-top: 2px;
                 font-weight: bold;
+                display: inline-block;
             }
 
             div.dp-day-time-slot {
@@ -99,13 +100,13 @@
                 </template>
 
             </div>
-        </template>  
+        </template>
         <template is="dom-if" if="{{isTickButton}}">
             <div class$="b-tick {{buttonClass}}" on-click="toggleChooseDropPoint"></div>
         </template>
         <template is="dom-if" if="{{isStandardButton}}">
             <button on-click="toggleChooseDropPoint" class$="button choose-droppoint {{buttonClass}}">{{buttonText}}</button>
-        </template>         
+        </template>
     </template>
 
     <script>
@@ -132,7 +133,7 @@
                     notify: true
                 },
                 droppointId: {
-                    type: String                
+                    type: String
                 },
                 buttonClass: {
                     type: String,
@@ -149,8 +150,8 @@
 
 
             ready: function()
-            {             
-                
+            {
+
                 var self = this;
                 this.initData();
                 this.isTickButton = (this.buttonType === "tick");
