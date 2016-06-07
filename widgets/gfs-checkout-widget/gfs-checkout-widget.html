@@ -239,12 +239,12 @@
                             <gfs-droppoint id="overlay-droppoint" droppoint-data="{{_selectedDropPoint}}" show-opening-hours="true"></gfs-droppoint>
                         </div>
                     </div>
-                    <template is="dom-if" if="{{_selectedDropPoint}}">
+                    <div class="hidden">
                         <div id="droppoint_info" on-click="_showDropPointDetails">
                                 <gfs-droppoint id="infobox-droppoint" droppoint-data="{{_selectedDropPoint}}" button-type="tick"></gfs-droppoint>
                                 <div id="droppoint_detail_link"> <a class="droppoint_info"> View Opening Times </a></div>
                         </div>
-                    </template>
+                    </div>
                     <img id='locateme' on-click="_locateMe" src='assets/locateme.png' />
                     <div id="gfsMapCanvas"></div>
                 </div>
@@ -478,8 +478,9 @@
             "datetoggleon": "_deliveryDateSelected",
             "prevmonth": "_calendarMonthChanged",
             "nextmonth": "_calendarMonthChanged",
-            "droppointChosen": "_droppointChosen",
-            "droppointUnchosen": "_droppointUnchosen"
+            //"droppointChosen": "_droppointChosen",
+            //"droppointUnchosen": "_droppointUnchosen",
+            "droppoint-changed": "_droppointChanged"
         },
         /*observers: [
             'dropPointChanged(_dropPoints.*)'
@@ -522,7 +523,8 @@
                 }
             }
             var now = new Date();
-            var week = new Date(new Date().setDate(now.getDate() + 7));
+            now = new Date(new Date().setDate(now.getDate() - 1));
+            var week = new Date(new Date().setDate(now.getDate() + 21));
             initialPost.Request.DateRange.DateFrom = this._makeDateStr(now);
             initialPost.Request.DateRange.DateTo = this._makeDateStr(week);
             this.$.ajaxpost.url = "///134.213.136.69/checkout/api/ProcessCheckoutRequest";
@@ -854,12 +856,19 @@
         _selectDropPoint: function(marker) {
             this._unselectDropPoint();
 
-            this._selectedDropPoint = marker.customData;
+            this._selectedDropPoint = marker.customData;// this._droppointById(marker.customData.droppointId);
             //this._infoBoxDroppoint.initData();
             //this.$$('#infobox-droppoint').initData();
 
             this._currentMarker = marker;
             this._infoWindow.open(this._map, this._currentMarker);
+            this.$['infobox-droppoint'].render();
+            this.$['overlay-droppoint'].render();
+            //eeeee
+
+
+
+
 
             if (this.selectedMarkerIcon) {
                 this._currentMarker.setIcon(this._getSelectedMarkerIcon());
@@ -886,20 +895,36 @@
 
         },
 
-        _droppointChosen: function (e) {
-            //If a drop point has not yet been chosen, or the current chosen drop point is different,
-            if (!this._chosenDropPoint || (e.detail.droppointData.droppointId !== this._chosenDropPoint.droppointData.droppointId)) {
+        _droppointChanged: function (e) {
+            //If a drop point has been chosen and it's not the previous choice, unchoose it
+            console.log('_droppointChanged',e.detail);
+            //If no droppoint chosen yet, or the changed droppoint is not the currently selected one,
+            var changedDroppoint = e.detail;
+            if (changedDroppoint.droppointData.chosen) {
+                //If a different droppoint is already chosen, unchooose it
                 if (this._chosenDropPoint) {
-                    this._chosenDropPoint.chosen = false;
+                    if (this._chosenDropPoint.droppointData.droppointId !== changedDroppoint.droppointData.droppointId) {
+                        this._chosenDropPoint.droppointData.chosen = false;
+                    }
                 }
-                this._chosenDropPoint = e.detail;
-                this._chosenDropPoint.chosen = true;
+                this._chosenDropPoint = changedDroppoint;
             }
+            //If a droppoint has been unchosen and it's the currently registered choice, unregister it
+            else if (this._chosenDropPoint) {
+                if (this._chosenDropPoint.droppointData.droppointId == changedDroppoint.droppointData.droppointId) {
+                    this._chosenDropPoint = null;
+                }              
+            }
+
+            
         },
 
-        _droppointUnchosen: function (e) {
-            //If a drop point has not yet been chosen, or the current chosen drop point is different,
-            this._chosenDropPoint = null;
+        _droppointById: function(id) {
+            for (var i = 0; i < this._dropPoints.length; i++) {
+                if (this._dropPoints[i].droppointId === id) {
+                    return this._dropPoints[i];
+                }
+            }
         },
 
 

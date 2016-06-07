@@ -22,6 +22,19 @@
                 text-align:left;
             }
 
+            .dp-opening-hours {
+                xborder: 1px solid red;
+            }
+
+            ul.dp-day-time-slots {
+                xborder: 1px solid green;
+            }
+
+            .dp-opening-hours ul.dp-day-time-slots {
+                margin-bottom: 0.1em;
+                
+            }
+
             .opening-hours
             {
                 font-size: 14px;
@@ -36,7 +49,6 @@
                 padding: 15px 32px;
                 text-align: center;
                 text-decoration: none;
-                display: inline-block;
                 font-size: 16px;
             }
 
@@ -49,11 +61,26 @@
                 margin-top: 2px;
                 font-weight: bold;
                 display: inline-block;
+
+            }
+
+            ul.gfs-droppoint {
+                padding-left: 0px;
+            }
+
+            ul.gfs-droppoint li {
+                display: block;
+                font-size: 0.8em;
             }
 
             div.dp-day-time-slot {
                 margin-bottom: 1px;
                 font-size: 10px;
+            }
+
+            .dp-day-time-slots {
+                display: inline-block;
+                padding-bottom: 0.1em;
             }
 
             .b-tick
@@ -90,15 +117,19 @@
         <template is="dom-if" if="{{showOpeningHours}}">
             <div class="dp-opening-hours">
                 <h5 class="dp-heading">Opening Hours</h5>
-                <template is="dom-repeat" items="{{droppointData.collectionSlots}}">
-                    <div class="dp-day-name">{{item.day}}</div>
-                    <div class="dp-day-time-slots">
-                        <template is="dom-repeat" items={{item.timeSlots}}>
-                            <div class="dp-day-time-slot">{{item.fromTime}} - {{item.toTime}}</div>
-                        </template>
-                    </div>
-                </template>
 
+                <template is="dom-repeat" items="{{droppointData.weekCollectionSlots}}">
+
+                        <div class="dp-day-name">{{item.day}}</div>
+                        <ul class="dp-day-time-slots">
+                            <template is="dom-repeat" items={{item.timeSlots}}>
+                                <li class="dp-day-time-slot">{{item.fromTime}} - {{item.toTime}}</li>
+                            </template>
+                        </ul>
+                        <br />
+
+
+                </template>
             </div>
         </template>
         <template is="dom-if" if="{{isTickButton}}">
@@ -127,11 +158,11 @@
                     type: Object,
                     value: false
                 },
-                chosen: {
+                /*chosen: {
                     type: Boolean,
                     value: false,
                     notify: true
-                },
+                },*/
                 droppointId: {
                     type: String
                 },
@@ -145,7 +176,10 @@
                 }
             },
             listeners: {
-                'chosen-changed': 'chosenChanged'
+                //'chosen-changed': 'chosenChanged'
+                "droppointData-changed": "chosenChanged",
+                "droppoint-data-changed": "chosenChanged",
+                "droppointdata-changed": "chosenChanged"
             },
 
 
@@ -157,19 +191,25 @@
                 this.isTickButton = (this.buttonType === "tick");
                 this.isStandardButton = !this.isTickButton;
 
-                window.addEventListener('droppointChosen', this.onDroppointChosen.bind(this), false);
-                window.addEventListener('droppointUnchosen', this.onDroppointUnchosen.bind(this), false);
+               // window.addEventListener('droppointChosen', this.onDroppointChosen.bind(this), false);
+                // window.addEventListener('droppointUnchosen', this.onDroppointUnchosen.bind(this), false);
+                window.addEventListener('droppoint-changed', this.onDroppointChanged.bind(this), false);
 
             },
 
             initData: function() {
                 //this.chosen = this.droppointData.chosen;
                 this.droppointId = this.droppointData.droppointId;
+                if (typeof (this.droppointData.chosen) === "undefined") {
+                    this.droppointChosen = false;
+                }
                 if (this.droppointData && this.droppointData.collectionSlots) {
                     this.droppointData.distanceInKm = (Math.round(this.droppointData.DistanceInMeters / 100)) / 10;
 
                     var dayCount = 0;
                     var self = this;
+                    this.droppointData.weekCollectionSlots = [];
+
                     this.droppointData.collectionSlots.forEach(function (collectionSlot) {
                         dayCount++;
                         if (dayCount <= 7) {
@@ -183,35 +223,29 @@
                                 timeSlot.fromTime = self._getTimeStr(timeSlot.fromDateTime);
                                 timeSlot.toTime = self._getTimeStr(timeSlot.toDateTime);
                             });
+                            if (collectionSlot.timeSlots.length > 0) {
+                                self.droppointData.weekCollectionSlots.push(collectionSlot);
+                            }
                         }
                     });
                 }
             },
 
-            onDroppointChosen: function(e) {
-                if (this.chosen && e.detail.droppointData.droppointId !== this.droppointData.droppointId) {
-                    this.chosen = false;
-                }
-                else if (!this.chosen) {
-                    this.chosen = true;
-                }
+
+            //Global event handler
+            onDroppointChanged: function(e) {
+                this.render();
             },
 
-            onDroppointUnchosen: function (e) {
-                if (this.chosen && e.detail.droppointData.droppointId == this.droppointData.droppointId) {
-                    this.chosen = false;
-                }
-            },
-
+            //Local event fired
             chosenChanged: function (e) {
-                if (typeof(this.chosen) === "null") return;
-                if (this.chosen) {
-                    this.fire("droppointChosen", this, true);
-                }
-                else if (!this.chosen) {
-                    this.fire("droppointUnchosen", this, true);
-                }
-                if (this.chosen) {
+                if (typeof (this.droppointData.chosen) === "null") return;
+                //Send global event
+                this.fire("droppoint-changed", this);
+            },
+
+            render: function() {
+                if (this.droppointData.chosen) {
                     this.buttonClass = "chosen";
                     this.buttonText = "Chosen";
                 }
@@ -219,12 +253,12 @@
                     this.buttonClass = "unchosen";
                     this.buttonText = "Choose";
                 }
-                this.initData();
             },
 
             toggleChooseDropPoint: function()
             {
-                this.chosen = !this.chosen;
+                this.set("droppointData.chosen", !this.droppointData.chosen);
+                this.chosenChanged();
             },
 
             _getUtcTime: function (d) {
