@@ -1,0 +1,13 @@
+bower_components/*
+brick*
+e6-promise/*
+font*
+iron-*
+paper-*
+polymer*
+platform/*
+promise-*
+es6-*
+jquery*
+webcomponentsjs/*
+widgets/backup/*

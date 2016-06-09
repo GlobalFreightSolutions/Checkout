@@ -4,7 +4,57 @@
 
     <template>
         <style>
+            ul {
+                padding-left: 2px;
+            }
+
+            li {
+               display: block;
+            }
+
+            tr {
+                line-height: 0.6em;
+            }
+
+            .content-container {
+                margin: auto;
+                width: 80%
+             }
+
+             .content-container-cols {
+                 display: flex;
+                 margin: auto;
+                 width: 80%
+             }
+
+             .dp-card {
+                padding: 10px;
+                margin: 10px;
+                border: 1px solid #808080;
+            
+                width: 500px;
+                border-radius: 12px;
+                height: 18em;
+                background-color: #F0F0F0;
+             }
+
+             .dp-card .content {
+                  display: flex;
+             }
+
+             .dp-card .content .dp-details {
+                width: 66%;
+                overflow: hidden;
+            }
+ 
             .dp-heading {
+                margin-top: 4px;
+                margin-bottom: 4px;
+            }
+            .dp-small-heading {
+                margin-top: 8px;
+                margin-bottom: 5px;
+                font-size: 0.6em;
             }
 
             .label
@@ -23,21 +73,21 @@
             }
 
             .dp-opening-hours {
-                xborder: 1px solid red;
+            }
+
+            .open-late {
+                font-size: 0.5em;
+                padding: 4px;
             }
 
             ul.dp-day-time-slots {
-                xborder: 1px solid green;
             }
 
-            .dp-opening-hours ul.dp-day-time-slots {
-                margin-bottom: 0.1em;
-                
+            .dp-opening-hours ul.dp-day-time-slots {         
             }
 
             .opening-hours
             {
-                font-size: 14px;
             }
 
             .choose-droppoint
@@ -46,10 +96,11 @@
                 border: none;
                 color: white;
                 margin-top: 4px;
-                padding: 15px 32px;
+                padding: 10px 20px;
                 text-align: center;
                 text-decoration: none;
                 font-size: 16px;
+                float: right;
             }
 
             .choose-droppoint.chosen {
@@ -57,31 +108,9 @@
             }
 
             div.dp-day-name {
-                font-size: 11px;
-                margin-top: 2px;
-                font-weight: bold;
-                display: inline-block;
-
+                font-weight: bold;              
             }
 
-            ul.gfs-droppoint {
-                padding-left: 0px;
-            }
-
-            ul.gfs-droppoint li {
-                display: block;
-                font-size: 0.8em;
-            }
-
-            div.dp-day-time-slot {
-                margin-bottom: 1px;
-                font-size: 10px;
-            }
-
-            .dp-day-time-slots {
-                display: inline-block;
-                padding-bottom: 0.1em;
-            }
 
             .b-tick
             {
@@ -100,44 +129,82 @@
                 background-image: url('assets/tick_on.png')
             }
 
+            .special-badges {
+                display: flex;
+            }
+
+            .open-late {
+                background-image: url('assets/opensign.png');
+                background-repeat: no-repeat;
+                background-size: 26px 26px;
+                width: 40px;
+            }
+
+            .dark {
+                -webkit-filter: invert(1);
+                filter: invert(1);  
+            }
+
+            .open-late div {
+                margin-top: 30px
+            }
+
         </style>
 
-        <div class="dp-icon">
-            <img src="{{droppointData.providerLogo}}" class="imageicon" width="45" height="45"></img>
-        </div>
-        <div class="dp-heading">{{droppointData.providerName}}</div>
-        <div id="dp-address">
-            <template is="dom-repeat" items="{{droppointData.geoLocation.addressLines}}">
-                {{item}}
-                <br />
-            </template>
-            {{droppointData.geoLocation.town}}, {{droppointData.geoLocation.postCode}}
-        </div>
+        <div class$="{{containerClass}}">
+            <div class="content">
+                <div class="dp-details">
+                    <div class="dp-icon">
+                        <img src="{{droppointData.providerLogo}}" class="imageicon" height="45" />
+                    </div>
+                    <div class="dp-heading">{{droppointData.providerName}}</div>
+                    <div id="dp-address">
+                        <template is="dom-repeat" items="{{droppointData.geoLocation.addressLines}}">
+                            {{item}}
+                            <br />
+                        </template>
+                        {{droppointData.geoLocation.town}}, {{droppointData.geoLocation.postCode}}
+                    </div>
+                </div>
 
-        <template is="dom-if" if="{{showOpeningHours}}">
-            <div class="dp-opening-hours">
-                <h5 class="dp-heading">Opening Hours</h5>
 
-                <template is="dom-repeat" items="{{droppointData.weekCollectionSlots}}">
+                <template is="dom-if" if="{{showOpeningHours}}">
 
-                        <div class="dp-day-name">{{item.day}}</div>
-                        <ul class="dp-day-time-slots">
-                            <template is="dom-repeat" items={{item.timeSlots}}>
-                                <li class="dp-day-time-slot">{{item.fromTime}} - {{item.toTime}}</li>
+                    <div class="dp-opening-hours">
+                        <div class="dp-small-heading">Opening Hours</div>
+                        <table>
+                            <template is="dom-repeat" items="{{droppointData.weekCollectionSlots}}">
+                                <tr>
+                                    <td class="dp-day-name"><ul><li>{{item.day}}</li></ul></td>
+                                    <td class="dp-day-time-slots">
+                                        <ul>
+                                            <template is="dom-repeat" items={{item.timeSlots}}>
+                                                <li class="dp-day-time-slot">{{item.fromTime}} - {{item.toTime}}</li>
+                                            </template>
+                                        </ul>
+                                    </td>
+                                </tr>
                             </template>
-                        </ul>
-                        <br />
+                        </table>
 
-
+                        <div class="special-badges">
+                            <div class="open-late"><div>LATE</div></div>
+                            <div class="open-late"><div>SAT</div></div>
+                            <div class="open-late"><div>SUN</div></div>
+                        </div>
+                    </div>
                 </template>
             </div>
-        </template>
-        <template is="dom-if" if="{{isTickButton}}">
-            <div class$="b-tick {{buttonClass}}" on-click="toggleChooseDropPoint"></div>
-        </template>
-        <template is="dom-if" if="{{isStandardButton}}">
-            <button on-click="toggleChooseDropPoint" class$="button choose-droppoint {{buttonClass}}">{{buttonText}}</button>
-        </template>
+            <div class="actions">
+                <template is="dom-if" if="{{isTickButton}}">
+                    <div class$="b-tick {{buttonClass}}" on-click="toggleChooseDropPoint"></div>
+                </template>
+                <template is="dom-if" if="{{isStandardButton}}">
+                    <button on-click="toggleChooseDropPoint" class$="button choose-droppoint {{buttonClass}}">{{buttonText}}</button>
+                </template>
+            </div>
+        </div>
+
     </template>
 
     <script>
@@ -146,6 +213,7 @@
             is: "gfs-droppoint",
 
             properties: {
+
                 droppointData: {
                     type: Object,
                     value: {}
@@ -157,6 +225,10 @@
                 showOpeningHours: {
                     type: Object,
                     value: false
+                },
+                containerClass: {
+                    type: String,
+                    value: "content-container"
                 },
                 /*chosen: {
                     type: Boolean,
@@ -173,6 +245,10 @@
                 buttonText: {
                     type: String,
                     value: "Choose"
+                },
+                streetAddress: {
+                    type: String,
+                    notify: true
                 }
             },
             listeners: {
@@ -199,16 +275,17 @@
 
             initData: function() {
                 //this.chosen = this.droppointData.chosen;
-                this.droppointId = this.droppointData.droppointId;
+                this.droppointId = this.droppointData.droppointId || "";
                 if (typeof (this.droppointData.chosen) === "undefined") {
                     this.droppointChosen = false;
                 }
-                if (this.droppointData && this.droppointData.collectionSlots) {
+                if (this.droppointData.collectionSlots) { // && this.droppointData.collectionSlots) {
                     this.droppointData.distanceInKm = (Math.round(this.droppointData.DistanceInMeters / 100)) / 10;
 
                     var dayCount = 0;
                     var self = this;
                     this.droppointData.weekCollectionSlots = [];
+                    if (!this.droppointData.collectionSlots) this.droppointData.collectionSlots = [];
 
                     this.droppointData.collectionSlots.forEach(function (collectionSlot) {
                         dayCount++;
@@ -228,6 +305,8 @@
                             }
                         }
                     });
+  
+                    this.streetAddress = this.droppointData.geoLocation.addressLines[0] + ", " + this.droppointData.geoLocation.town + ", " + this.droppointData.geoLocation.postCode
                 }
             },
 
@@ -244,7 +323,8 @@
                 this.fire("droppoint-changed", this);
             },
 
-            render: function() {
+            render: function () {
+                this.initData();
                 if (this.droppointData.chosen) {
                     this.buttonClass = "chosen";
                     this.buttonText = "Chosen";

@@ -1,0 +1,66 @@
+﻿<link rel="import" href="../../polymer/polymer.html" />
+<link rel="import" href="../gfs-carrier-icon/gfs-carrier-icon.html" />
+
+<dom-module id="gfs-carrier-info">
+    <style>
+        #container {
+            margin-top: 0.4em;
+            margin-bottom: 0.4em;
+            display: flex;
+        
+        }
+        gfs-carrier-icon {
+            margin-right: 0.4em;
+        }
+        h3 {
+            margin-top: 0px;
+        }
+
+    </style>
+
+    <template>
+        <div id="container">
+            <gfs-carrier-icon carrier-code="dpdPickup" icon-size="large"></gfs-carrier-icon>
+
+            <div class="info">
+                <h3>{{title}}</h3>
+                <div class="infoText">{{info}}</div>
+                <div class="infoLink">
+                    For more information visit<br />
+                    <a target="_blank" href="{{url}}">{{url}}</a>
+                </div>
+            </div>  
+        </div>
+
+       
+    </template>
+
+    <script>
+
+        Polymer({
+            is: "gfs-carrier-info",
+
+            properties: {
+                title: {
+                    type: String,
+                    value: "DPD Pickup"
+                },
+                info: {
+                    type: String,
+                    value: "DPD Pickup provides next day before noon delivery into your preferred delivery point for collection at a time convenient for you.  For peace of mind you will be required to provide a form of photo ID on collection.  Don't forget to provide your mobile number at checkout so that DPD can tell you when your parcel is ready to be collected."
+                },
+                url: {
+                    type: String,
+                    value: "https://www.dpd.com/nl_privatecustomers#!pickup"
+                }
+            },
+            listeners: {
+
+            },
+            ready: function()
+            {
+
+            }
+        });
+    </script>
+</dom-module>

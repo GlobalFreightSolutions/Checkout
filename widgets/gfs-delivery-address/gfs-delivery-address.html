@@ -1,0 +1,48 @@
+﻿<link rel="import" href="../../polymer/polymer.html" />
+
+<dom-module id="gfs-delivery-address">
+    <style>
+
+    </style>
+
+    <template>
+        <div id="container">        
+            <div class="info"> 
+                <template is="dom-if" if="{{overrideStreetAddress}}">
+                    <div class="infoText">Your new delivery address is {{overrideStreetAddress}}</div>
+                </template>
+                <template is="dom-if" if="{{!overrideStreetAddress}}">
+                    <div class="infoText">Your default current delivery address is {{defaultStreetAddress}}</div>
+                </template>             
+                
+            </div>
+        </div>
+
+
+    </template>
+
+    <script>
+
+        Polymer({
+            is: "gfs-delivery-address",
+
+            properties: {
+                defaultStreetAddress: {
+                    type: String
+                },
+                overrideStreetAddress: {
+                    type: String,
+                    value: null
+                },
+
+            },
+            listeners: {
+
+            },
+            ready: function()
+            {
+
+            }
+        });
+    </script>
+</dom-module>

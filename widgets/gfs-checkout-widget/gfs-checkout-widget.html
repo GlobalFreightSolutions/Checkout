@@ -5,6 +5,8 @@
 <link rel="import" href="../../iron-collapse/iron-collapse.html" />
 <link rel="import" href="../local-image-widget/local-image.html" />
 <link rel="import" href="../gfs-droppoint/gfs-droppoint.html" />
+<link rel="import" href="../gfs-carrier-info/gfs-carrier-info.html" />
+<link rel="import" href="../gfs-delivery-address/gfs-delivery-address.html" />
 <link rel="import" href="../map-region-manager/map-region-manager.html" />
 <link rel="import" href="../../paper-toggle-button/paper-toggle-button.html" />
 <link rel="stylesheet" type="text/css" href="./custom.css" />
@@ -12,7 +14,7 @@
 
   <template>
     <style>
-        h2 { margin-left: 0px; clear: left; }
+        h3 { margin-left: 0px; clear: left; }
         div, span { font-family: "Raleway", "Helvetica Neue", Verdana, Arial, sans-serif; }
         .toggle-title{ width: 100%; cursor: pointer; }
         .toggle-content{ margin-top: 10px; margin-bottom: 10px; }
@@ -57,7 +59,7 @@
             top:0; left:0;
             width:240px;
             border-right:1px solid #b9b9b9;
-            padding: 5px 30px 30px 30px;
+            padding: 5px 15px 15px 15px;
             /*font-family:gotham_bookregular;*/
             color:silver;
             float: left;
@@ -72,6 +74,13 @@
             position: absolute;
             top: 32px;
             right: 32px;
+            margin-top: -28px;
+            margin-right: -20px
+        }
+
+        #droppoint_overlay gfs-checkout {
+            margin: auto;
+            width: 80%
         }
 
         .toggle-label {
@@ -128,6 +137,16 @@
            padding-left: 2px;
         }
 
+        .cardList {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+       div.dark .open-late {
+            -webkit-filter: invert(1);
+            filter: invert(1);
+       }
+
     </style>
 
     <iron-ajax
@@ -148,13 +167,15 @@
         debounce-duration="300">
     </iron-ajax>
 
-    <map-region-manager id="regionManager" />
+    <map-region-manager id="regionManager"></map-region-manager>
 
     <div id="widgetContainer">
 
+            <gfs-delivery-address default-street-address="{{initialAddress}}" override-street-address="{{_chosenDropPoint.streetAddress}}"></gfs-delivery-address>
+            
             <!--template is="dom-if" if="{{useStandard}}"-->
             <div class="header">
-                    <input name="deliveryTypePanel" id="standardDeliveriesOption" on-click="_toggleStandardDeliveryPanelCollapse" type="radio"/><label for="standardDeliveriesOption"><h2>{{standardDeliveryTitle}}</h2></label>
+                    <input name="deliveryTypePanel" id="standardDeliveriesOption" on-click="_toggleStandardDeliveryPanelCollapse" type="radio"/><label for="standardDeliveriesOption"><h3>{{standardDeliveryTitle}}</h3></label>
             </div>
             <iron-collapse id="standardDeliveryPanel">
 
@@ -180,7 +201,7 @@
             <template is="dom-if" if="{{useCalendar}}">
 
                     <div class="header">
-                        <input name="deliveryTypePanel" id="calendarDeliveriesOption" on-click="_toggleCalendarPanelCollapse" type="radio"/><label for="calendarDeliveriesOption"><h2>{{calendarDeliveryTitle}}</h2></label>
+                        <input name="deliveryTypePanel" id="calendarDeliveriesOption" on-click="_toggleCalendarPanelCollapse" type="radio"/><label for="calendarDeliveriesOption"><h3>{{calendarDeliveryTitle}}</h3></label>
                     </div>
                     <iron-collapse id="calendarPanel">
                         <div class="row">
@@ -219,13 +240,13 @@
 
 
             <div class="header">
-                <input name="deliveryTypePanel" id="dropPointDeliveriesOption" on-click="_toggleDropPointPanelCollapse" type="radio"/><label for="dropPointDeliveriesOption"><h2>{{dropPointTitle}}</h2></label>
+                <input name="deliveryTypePanel" id="dropPointDeliveriesOption" on-click="_toggleDropPointPanelCollapse" type="radio"/><label for="dropPointDeliveriesOption"><h3>{{dropPointTitle}}</h3></label>
             </div>
             <iron-collapse id="dropPointPanel">
 
                 <div id="toggleDropPointsViewControls">
                     <div class="toggle-label">List&nbsp;<i class="fa fa-ellipsis-v"></i></div>
-                    <paper-toggle-button id="toggleDropPointsView" class="gfs-toggle" on-change="_showDropPointsView"></paper-toggle-button>
+                    <paper-toggle-button id="toggleDropPointsView" class="gfs-toggle" on-change="_showDropPointsView" active="true" checked></paper-toggle-button>
                     <div class="toggle-label"><i class="fa fa-map-marker"></i>&nbsp;Map</div>
                 </div>
 
@@ -236,7 +257,7 @@
                             <div id="droppoint_overlay_close" on-click="_hideDropPointDetails">
                                 <local-image img-src="assets/x.png" local-folder="gfs-checkout-widget" alt="close"></local-image>
                             </div>
-                            <gfs-droppoint id="overlay-droppoint" droppoint-data="{{_selectedDropPoint}}" show-opening-hours="true"></gfs-droppoint>
+                            <gfs-droppoint id="overlay-droppoint" droppoint-data="{{_selectedDropPoint}}" is-dark="true" show-opening-hours="true"></gfs-droppoint>
                         </div>
                     </div>
                     <div class="hidden">
@@ -248,14 +269,15 @@
                     <img id='locateme' on-click="_locateMe" src='assets/locateme.png' />
                     <div id="gfsMapCanvas"></div>
                 </div>
+                <gfs-carrier-info></gfs-carrier-info>
                 <array-selector id="dropPointSelector" items="{{_dropPoints}}" selected="{{chosen}}" multi="false"></array-selector>
-                <div id="dropPointListContainer">
-                    <h2>Drop Points</h2>
-                    <template id="dropPointList" is="dom-repeat" items="{{_dropPoints}}">
-                        <gfs-droppoint show-opening-hours="false" button-type="tick" droppoint-data="{{item}}"></gfs-droppoint>
-
-                    </template>
-
+                <div id="dropPointListContainer" class="hidden">
+                    <h3>Drop Points</h3>
+                    <div class="cardList">
+                        <template id="dropPointList" is="dom-repeat" items="{{_dropPoints}}">
+                            <gfs-droppoint show-opening-hours="true" container-class="dp-card" button-type="standard" droppoint-data="{{item}}"></gfs-droppoint>
+                        </template>
+                    </div>
                 </div>
             </iron-collapse>
     </div>
@@ -325,6 +347,10 @@
                 value: true
             },
 
+            initialAddress: {
+                type: String
+            },
+
             // ATTRIBUTES
             //
             // These properties represent text used for labels, titles and prompts throughout the widget.
@@ -333,10 +359,7 @@
             // e.g: 'dropPointTitle' would be set by:
             // <gfs-checkout drop-point-title="Your text goes here" ...
 
-            initialAddress: {
-              type: String,
-              value: 'SE6 1EJ'
-            },
+
 
             dropPointTitle: {
                 type: String,
@@ -515,20 +538,23 @@
                         }
                     },
                     "RequestedDeliveryTypes": [
-                       "dmDropPoint","dmStandard"
+                       "dmDropPoint", "dmStandard"
                     ],
                     "Session": {
                         "APIKeyID": "CL-669285A5-9C7A-44B7-A706-D7F5CFD962E8"
                     }
                 }
-            }
+            };
+            //"APIKeyID": "CL-669285A5-9C7A-44B7-A706-D7F5CFD962E8"
             var now = new Date();
             now = new Date(new Date().setDate(now.getDate() - 1));
             var week = new Date(new Date().setDate(now.getDate() + 21));
             initialPost.Request.DateRange.DateFrom = this._makeDateStr(now);
             initialPost.Request.DateRange.DateTo = this._makeDateStr(week);
+            
             this.$.ajaxpost.url = "///134.213.136.69/checkout/api/ProcessCheckoutRequest";
-            this.$.ajaxpost.params = {"api_key": "CL-669285A5-9C7A-44B7-A706-D7F5CFD962E8"};
+            //this.$.ajaxpost.url = "///176.12.109.10/checkout/api/ProcessCheckoutRequest";
+            this.$.ajaxpost.params = { "api_key": "CL-669285A5-9C7A-44B7-A706-D7F5CFD962E8" };
             this.$.ajaxpost.body = initialPost;
             console.log("Initial POST", new Date().getTime());
             this.$.ajaxpost.generateRequest();
@@ -799,12 +825,12 @@
 
         _showDropPointsView: function() {
             if (this.$.toggleDropPointsView.checked) {
-                this.$.dropPointListContainer.classList.remove('hidden');
-                this.$.mapContainer.classList.add('hidden');
-            }
-            else {
                 this.$.dropPointListContainer.classList.add('hidden');
                 this.$.mapContainer.classList.remove('hidden');
+            }
+            else {
+                this.$.dropPointListContainer.classList.remove('hidden');
+                this.$.mapContainer.classList.add('hidden');
             }
         },
 
@@ -907,7 +933,9 @@
                         this._chosenDropPoint.droppointData.chosen = false;
                     }
                 }
+
                 this._chosenDropPoint = changedDroppoint;
+                //this._chosenDropPoint.initData();//streetAddress = "Hello";
             }
             //If a droppoint has been unchosen and it's the currently registered choice, unregister it
             else if (this._chosenDropPoint) {
