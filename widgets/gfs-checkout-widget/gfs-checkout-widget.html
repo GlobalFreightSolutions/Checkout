@@ -9,6 +9,7 @@
 <link rel="import" href="../gfs-delivery-address/gfs-delivery-address.html" />
 <link rel="import" href="../map-region-manager/map-region-manager.html" />
 <link rel="import" href="../../paper-toggle-button/paper-toggle-button.html" />
+<link rel="import" href="../../paper-spinner/paper-spinner.html" />
 <link rel="stylesheet" type="text/css" href="./custom.css" />
 <dom-module id="gfs-checkout">
 
@@ -169,6 +170,28 @@
             filter: invert(1);
        }
 
+        div#gfsMapCanvas .loading {
+            margin: auto;
+            width: 100px;
+            padding-top: 120px;
+        }
+
+        paper-spinner#map-spinner {
+
+            width: 100px;
+            height: 100px;
+        }
+
+        div.cardList .loading {
+            margin: auto;
+            width: 100px;
+            padding-top: 50px;
+        }
+        paper-spinner#list-spinner {
+            width: 100px;
+            height: 100px;
+        }
+
     </style>
 
     <iron-ajax
@@ -282,8 +305,10 @@
                     <div class="toggle-label"><i class="fa fa-map-marker"></i>&nbsp;Map</div>
                 </div>
 
-                <div class="gfsDropPoint" id="mapContainer">
+               
 
+                <div class="gfsDropPoint" id="mapContainer">
+                    
                     <div id="dropPointDetails" class$="{{_dropPointDetailsClass}}">
                         <div id="droppoint_overlay" style="height: {{mapHeight}}px; display: block">
                             <div id="droppoint_overlay_close" on-click="_hideDropPointDetails">
@@ -299,7 +324,7 @@
                         </div>
                     </div>
                     <img id='locateme' on-click="_locateMe" src='assets/locateme.png' />
-                    <div id="gfsMapCanvas"></div>
+                    <div id="gfsMapCanvas"><div class="loading"><paper-spinner active id="map-spinner"></paper-spinner></div></div>
                 </div>
 
                 
@@ -307,7 +332,8 @@
                 <div id="dropPointListContainer" class="hidden">
                     <h3>Drop Points</h3>
                     <div class="cardList">
-                        <template id="dropPointList" is="dom-repeat" items="{{_dropPoints}}">
+                        <div id="list-loading" class="loading"><paper-spinner active id="list-spinner"></paper-spinner></div>
+                        <template id="dropPointList" is="dom-repeat" items="{{_dropPoints}}">                          
                             <gfs-droppoint show-opening-hours="true" container-class="dp-card" button-type="standard" droppoint-data="{{item}}"></gfs-droppoint>
                         </template>
                     </div>
@@ -602,6 +628,9 @@
 
         _handleResponse: function(e)
         {
+            this.$$('#list-spinner').active = false;
+            this.$$('#list-loading').classList.add('hidden');
+
             var useWebService = true; //false;
             if (useWebService) {
                 this._data = e.detail.response;
