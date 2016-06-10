@@ -14,13 +14,26 @@
 
   <template>
     <style>
-        h3 { margin-left: 0px; clear: left; }
+        h3 { margin-left: 0px; clear: left; margin-top: 0px; }
         div, span { font-family: "Raleway", "Helvetica Neue", Verdana, Arial, sans-serif; }
         .toggle-title{ width: 100%; cursor: pointer; }
         .toggle-content{ margin-top: 10px; margin-bottom: 10px; }
         .hidden {
             display: none;
             z-index: 0;
+        }
+
+        ul {
+            padding: 5px;
+        }
+
+        li {
+            display: flex;
+        }
+
+        li label {
+            margin-top: 5px;
+            margin-left: 4px;
         }
 
         #mapContainer {
@@ -83,9 +96,14 @@
             width: 80%
         }
 
+        #toggleDropPointsViewControls {
+            display: flex;
+         }
+
         .toggle-label {
             display: inline-block;
             font-size: 18px;
+            margin-right: 0.4em
         }
 
         .fade-in
@@ -102,7 +120,7 @@
             z-index: 0 !important;
         }
 
-         paper-toggle-button.gfs-toggle {
+        paper-toggle-button.gfs-toggle {
             display: inline-block;
             --paper-toggle-button-checked-bar-color: #909090;
             --paper-toggle-button-checked-button-color: #909090;
@@ -110,7 +128,7 @@
             --paper-toggle-button-unchecked-bar-color: #909090;
             --paper-toggle-button-unchecked-button-color: #909090;
             --paper-toggle-button-unchecked-ink-color: #909090;
-         }
+        }
 
         a.droppoint_info,
         a.droppoint_info:visited,
@@ -125,6 +143,10 @@
         a.droppoint_info:hover
         {
             text-decoration: underline;
+        }
+
+        .dp-things {
+            display: flex;
         }
 
         .highlight
@@ -142,7 +164,7 @@
             flex-wrap: wrap;
         }
 
-       div.dark .open-late {
+        div.dark .open-late {
             -webkit-filter: invert(1);
             filter: invert(1);
        }
@@ -172,8 +194,7 @@
     <div id="widgetContainer">
 
             <gfs-delivery-address default-street-address="{{initialAddress}}" override-street-address="{{_chosenDropPoint.streetAddress}}"></gfs-delivery-address>
-            
-            <!--template is="dom-if" if="{{useStandard}}"-->
+                    
             <div class="header">
                     <input name="deliveryTypePanel" id="standardDeliveriesOption" on-click="_toggleStandardDeliveryPanelCollapse" type="radio"/><label for="standardDeliveriesOption"><h3>{{standardDeliveryTitle}}</h3></label>
             </div>
@@ -196,7 +217,6 @@
                     </template>
                 </div>
             </iron-collapse>
-            <!--/template-->
 
             <template is="dom-if" if="{{useCalendar}}">
 
@@ -243,6 +263,18 @@
                 <input name="deliveryTypePanel" id="dropPointDeliveriesOption" on-click="_toggleDropPointPanelCollapse" type="radio"/><label for="dropPointDeliveriesOption"><h3>{{dropPointTitle}}</h3></label>
             </div>
             <iron-collapse id="dropPointPanel">
+                <div class="dp-things">
+                    <gfs-carrier-info></gfs-carrier-info>
+                    <template is="dom-if" if="{{_chosenDropPoint}}">
+                        <div>
+                            <gfs-droppoint id="chosen-droppoint" droppoint-data="{{_chosenDropPoint.droppointData}}" show-button="false" title="Your collection point" container-class="dp-card no-button" show-opening-hours="true" button-type="cancel"></gfs-droppoint>
+                        </div>
+                    </template>
+                    <template is="dom-if" if="!{{_chosenDropPoint}}">
+                        <gfs-droppoint id="chosen-droppoint" style="visibility: hidden" container-class="dp-card" show-opening-hours="true" show-button="false" button-type="cancel"></gfs-droppoint>
+                    </template>
+                </div>
+           
 
                 <div id="toggleDropPointsViewControls">
                     <div class="toggle-label">List&nbsp;<i class="fa fa-ellipsis-v"></i></div>
@@ -257,7 +289,7 @@
                             <div id="droppoint_overlay_close" on-click="_hideDropPointDetails">
                                 <local-image img-src="assets/x.png" local-folder="gfs-checkout-widget" alt="close"></local-image>
                             </div>
-                            <gfs-droppoint id="overlay-droppoint" droppoint-data="{{_selectedDropPoint}}" is-dark="true" show-opening-hours="true"></gfs-droppoint>
+                            <gfs-droppoint id="overlay-droppoint" droppoint-data="{{_selectedDropPoint}}" container-class="overlay" show-distance="false" show-opening-hours="true"></gfs-droppoint>
                         </div>
                     </div>
                     <div class="hidden">
@@ -269,7 +301,8 @@
                     <img id='locateme' on-click="_locateMe" src='assets/locateme.png' />
                     <div id="gfsMapCanvas"></div>
                 </div>
-                <gfs-carrier-info></gfs-carrier-info>
+
+                
                 <array-selector id="dropPointSelector" items="{{_dropPoints}}" selected="{{chosen}}" multi="false"></array-selector>
                 <div id="dropPointListContainer" class="hidden">
                     <h3>Drop Points</h3>
@@ -890,11 +923,6 @@
             this._infoWindow.open(this._map, this._currentMarker);
             this.$['infobox-droppoint'].render();
             this.$['overlay-droppoint'].render();
-            //eeeee
-
-
-
-
 
             if (this.selectedMarkerIcon) {
                 this._currentMarker.setIcon(this._getSelectedMarkerIcon());
@@ -943,6 +971,7 @@
                     this._chosenDropPoint = null;
                 }              
             }
+            //this.$$('#chosen-droppoint').render();
 
             
         },

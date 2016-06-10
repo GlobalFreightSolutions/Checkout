@@ -6,9 +6,21 @@
             .icon {
                 display: inline-block;
             }
+            gfs-carrier-icon img {
+                width: 50px!important;
+            }
+            .small img {
+                height: 32px;
+            }
+            .medium img {
+                height: 50px;
+            }
+            .large img {
+                height: 64px;
+            }
         </style>
 
-        <div class="icon">
+        <div class$="icon {{iconSize}}">
             <img src="{{imageUrl}}"  />
         </div>
            
@@ -34,34 +46,41 @@
                     type: Object,
                     value: {
                         'dpd': {
-                            'small': '///test.checkout.justshoutgfs.com/logos/DPD.png',
-                            'medium': '///test.checkout.justshoutgfs.com/logos/DPD.png',
-                            'large': '///test.checkout.justshoutgfs.com/logos/DPD.png'
+                            'small': '/images/gfsCarriers/DPD logo cube small.png',
+                            'medium': '/images/gfsCarriers/DPD logo cube small.png',
+                            'large': '/images/gfsCarriers/DPD logo cube small.png',
+                            'largest': '/images/gfsCarriers/DPD logo cube small.png'
+
                         },
                         'doddle': {
                             'small': '///test.checkout.justshoutgfs.com/logos/Doddle.png',
                             'medium': '///test.checkout.justshoutgfs.com/logos/Doddle.png',
-                            'large': '///test.checkout.justshoutgfs.com/logos/Doddle.png'
+                            'large': '///test.checkout.justshoutgfs.com/logos/Doddle.png',
+                            'largest': '///test.checkout.justshoutgfs.com/logos/Doddle.png'
                         },
                         'collectplus': {
-                            'small': '///test.checkout.justshoutgfs.com/logos/Collect%20Plus.png',
-                            'medium': '///test.checkout.justshoutgfs.com/logos/Collect%20Plus.png',
-                            'large': '///test.checkout.justshoutgfs.com/logos/Collect%20Plus.png'
+                            'small': '/images/gfsCarriers/carrier-collectplus.png',
+                            'medium': '/images/gfsCarriers/carrier-collectplus.png',
+                            'large': '/images/gfsCarriers/carrier-collectplus.png',
+                            'largest': '/images/gfsCarriers/carrier-collectplus.png'
                         },
                         'hermes': {
                             'small': '///test.checkout.justshoutgfs.com/logos/Hermes.png',
                             'medium': '///test.checkout.justshoutgfs.com/logos/Hermes.png',
-                            'large': '///test.checkout.justshoutgfs.com/logos/Hermes.png'
+                            'large': '///test.checkout.justshoutgfs.com/logos/Hermes.png',
+                            'largest': '///test.checkout.justshoutgfs.com/logos/Hermes.png'
                         },
                         'inpost': {
-                            'small': '///test.checkout.justshoutgfs.com/logos/Inpost.png',
-                            'medium': '///test.checkout.justshoutgfs.com/logos/Inpost.png',
-                            'large': '///test.checkout.justshoutgfs.com/logos/Inpost.png'
+                            'small': '/images/gfsCarriers/carrier-inpost.png',
+                            'medium': '/images/gfsCarriers/carrier-inpost.png',
+                            'large': '/images/gfsCarriers/carrier-inpost.png',
+                            'largest': '/images/gfsCarriers/carrier-inpost.png'
                         },
                         'dpdPickup': {
                             'small': '/Images/gfsCarriers/pickup logo cube small.png',
                             'medium': '/Images/gfsCarriers/pickup logo cube small.png',
-                            'large': '/Images/gfsCarriers/pickup logo cube small.png'
+                            'large': '/Images/gfsCarriers/pickup logo cube small.png',
+                            'largest': '/Images/gfsCarriers/pickup logo cube small.png'
                         }          
 
                     }

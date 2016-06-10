@@ -4,6 +4,10 @@
 
     <template>
         <style>
+
+            h3 {
+                margin-top: 0px;
+            }
             ul {
                 padding-left: 2px;
             }
@@ -21,28 +25,57 @@
                 width: 80%
              }
 
+             .overlay {
+                margin: auto;
+                width: 80%;
+             }
+
+
              .content-container-cols {
                  display: flex;
                  margin: auto;
                  width: 80%
              }
 
+             .no-button button {
+                 display:none;
+             }
+             
+             .no-button.dp-card .actions {
+                display: none;
+             }
+
+             .no-button.dp-card {
+                 height: 14em;
+             }
+
              .dp-card {
                 padding: 10px;
-                margin: 10px;
-                border: 1px solid #808080;
-            
+                margin: 10px;    
                 width: 500px;
-                border-radius: 12px;
                 height: 18em;
-                background-color: #F0F0F0;
+                background-color: #FAFAFA;
+                border-radius: 3px;
+                box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+                border: 1px solid #FAFAFA;
              }
+
+             .dp-mini-card {
+                padding: 10px;
+                margin: 10px;
+                width: 200px;         
+                background-color: #FAFAFA;
+                border-radius: 3px;
+                box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+                border: 1px solid #FAFAFA;
+             }
+
 
              .dp-card .content {
                   display: flex;
              }
 
-             .dp-card .content .dp-details {
+            .dp-card .content .dp-details {
                 width: 66%;
                 overflow: hidden;
             }
@@ -53,7 +86,7 @@
             }
             .dp-small-heading {
                 margin-top: 8px;
-                margin-bottom: 5px;
+                margin-bottom: 0px;
                 font-size: 0.6em;
             }
 
@@ -72,22 +105,17 @@
                 text-align:left;
             }
 
-            .dp-opening-hours {
-            }
-
             .open-late {
                 font-size: 0.5em;
                 padding: 4px;
             }
 
-            ul.dp-day-time-slots {
-            }
+            #dp-distance {
+                margin-bottom: 0px;
 
-            .dp-opening-hours ul.dp-day-time-slots {         
             }
-
-            .opening-hours
-            {
+            #dp-distance .fa {
+                margin-right: 0.2em;
             }
 
             .choose-droppoint
@@ -96,7 +124,7 @@
                 border: none;
                 color: white;
                 margin-top: 4px;
-                padding: 10px 20px;
+                padding: 8px 20px;
                 text-align: center;
                 text-decoration: none;
                 font-size: 16px;
@@ -107,10 +135,18 @@
                  background-color: #4CAF50; /* Green */
             }
 
+           .dp-opening-hours table {
+               margin-top: 6px;
+           }
+
             div.dp-day-name {
                 font-weight: bold;              
             }
 
+            .b-cancel
+            {
+
+            }
 
             .b-tick
             {
@@ -137,34 +173,45 @@
                 background-image: url('assets/opensign.png');
                 background-repeat: no-repeat;
                 background-size: 26px 26px;
-                width: 40px;
+                width: 32px;
             }
 
-            .dark {
+            .open-late .badge-text {
+                margin-top: 22px;
+                font-weight: bold;
+            }
+
+            .overlay .open-late {
                 -webkit-filter: invert(1);
                 filter: invert(1);  
-            }
-
-            .open-late div {
-                margin-top: 30px
             }
 
         </style>
 
         <div class$="{{containerClass}}">
             <div class="content">
+                
                 <div class="dp-details">
+                    <template is="dom-if" if="{{title}}">
+                        <h3>{{title}}</h3>
+                    </template>
                     <div class="dp-icon">
                         <img src="{{droppointData.providerLogo}}" class="imageicon" height="45" />
                     </div>
-                    <div class="dp-heading">{{droppointData.providerName}}</div>
                     <div id="dp-address">
                         <template is="dom-repeat" items="{{droppointData.geoLocation.addressLines}}">
                             {{item}}
                             <br />
                         </template>
-                        {{droppointData.geoLocation.town}}, {{droppointData.geoLocation.postCode}}
+                        <!--
+                            {{droppointData.geoLocation.town}}, {{droppointData.geoLocation.postCode}}
+                        -->
                     </div>
+                    <template is="dom-if" if="showDistance">
+                        <div class="dp-small-heading">Distance</div>
+                        <div id="dp-distance"><i class="fa fa-road"></i>{{droppointData.localizedDistance}}</div>
+                    </template>
+
                 </div>
 
 
@@ -188,9 +235,9 @@
                         </table>
 
                         <div class="special-badges">
-                            <div class="open-late"><div>LATE</div></div>
-                            <div class="open-late"><div>SAT</div></div>
-                            <div class="open-late"><div>SUN</div></div>
+                            <div class="open-late"><div class="badge-text">LATE</div></div>
+                            <div class="open-late"><div class="badge-text">SAT</div></div>
+                            <div class="open-late"><div class="badge-text">SUN</div></div>
                         </div>
                     </div>
                 </template>
@@ -213,6 +260,9 @@
             is: "gfs-droppoint",
 
             properties: {
+                title: {
+                    type: String
+                },
 
                 droppointData: {
                     type: Object,
@@ -225,6 +275,10 @@
                 showOpeningHours: {
                     type: Object,
                     value: false
+                },
+                showDistance: {
+                    type: Object,
+                    value: true
                 },
                 containerClass: {
                     type: String,

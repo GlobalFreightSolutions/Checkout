@@ -2,7 +2,10 @@
 
 <dom-module id="gfs-delivery-address">
     <style>
-
+        .infoText {
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
     </style>
 
     <template>
@@ -12,7 +15,7 @@
                     <div class="infoText">Your new delivery address is {{overrideStreetAddress}}</div>
                 </template>
                 <template is="dom-if" if="{{!overrideStreetAddress}}">
-                    <div class="infoText">Your default current delivery address is {{defaultStreetAddress}}</div>
+                    <div class="infoText">Your current delivery address is {{defaultStreetAddress}}</div>
                 </template>             
                 
             </div>
