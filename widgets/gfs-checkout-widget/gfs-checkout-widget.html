@@ -23,6 +23,9 @@
             display: none;
             z-index: 0;
         }
+        input[type=radio] {
+            margin-right: 4px
+        }
 
         ul {
             padding: 5px;
@@ -216,7 +219,22 @@
 
     <div id="widgetContainer">
 
-            <gfs-delivery-address default-street-address="{{initialAddress}}" override-street-address="{{_chosenDropPoint.streetAddress}}"></gfs-delivery-address>
+            
+            <div class="dp-things">
+                <template is="dom-if" if="{{_unChosen}}">
+                    <gfs-delivery-address id="delivery-address" default-street-address="{{initialAddress}}" override-street-address=""></gfs-delivery-address>
+                </template>
+
+                <template is="dom-if" if="{{_chosenDropPoint}}">
+                    <div>
+                        <gfs-droppoint id="chosen-droppoint" droppoint-data="{{_chosenDropPoint.droppointData}}" show-button="false" title="Your collection point" container-class="dp-card no-button" show-opening-hours="true" button-type="cancel"></gfs-droppoint>
+                        <script>document.getElementById('delivery-address').class = "hidden";</script>
+                    </div>
+                </template>
+
+                <gfs-carrier-info></gfs-carrier-info>
+                <gfs-supported-carriers carriers="dpd inpost"></gfs-supported-carriers>
+            </div>
                     
             <div class="header">
                     <input name="deliveryTypePanel" id="standardDeliveriesOption" on-click="_toggleStandardDeliveryPanelCollapse" type="radio"/><label for="standardDeliveriesOption"><h3>{{standardDeliveryTitle}}</h3></label>
@@ -285,27 +303,13 @@
             <div class="header">
                 <input name="deliveryTypePanel" id="dropPointDeliveriesOption" on-click="_toggleDropPointPanelCollapse" type="radio"/><label for="dropPointDeliveriesOption"><h3>{{dropPointTitle}}</h3></label>
             </div>
-            <iron-collapse id="dropPointPanel">
-                <div class="dp-things">
-                    <gfs-carrier-info></gfs-carrier-info>
-                    <template is="dom-if" if="{{_chosenDropPoint}}">
-                        <div>
-                            <gfs-droppoint id="chosen-droppoint" droppoint-data="{{_chosenDropPoint.droppointData}}" show-button="false" title="Your collection point" container-class="dp-card no-button" show-opening-hours="true" button-type="cancel"></gfs-droppoint>
-                        </div>
-                    </template>
-                    <template is="dom-if" if="!{{_chosenDropPoint}}">
-                        <gfs-droppoint id="chosen-droppoint" style="visibility: hidden" container-class="dp-card" show-opening-hours="true" show-button="false" button-type="cancel"></gfs-droppoint>
-                    </template>
-                </div>
-           
+            <iron-collapse id="dropPointPanel">           
 
                 <div id="toggleDropPointsViewControls">
                     <div class="toggle-label">List&nbsp;<i class="fa fa-ellipsis-v"></i></div>
                     <paper-toggle-button id="toggleDropPointsView" class="gfs-toggle" on-change="_showDropPointsView" active="true" checked></paper-toggle-button>
                     <div class="toggle-label"><i class="fa fa-map-marker"></i>&nbsp;Map</div>
-                </div>
-
-               
+                </div>              
 
                 <div class="gfsDropPoint" id="mapContainer">
                     
@@ -491,6 +495,12 @@
                 type: Object
             },
 
+            _unChosen: {
+                type: Object,
+                value: true,
+                notify: true
+            },
+
             _dropPointDetailsClass: {
                 type: String,
                 value: "hidden"
@@ -618,7 +628,7 @@
             console.log("Initial POST", new Date().getTime());
             this.$.ajaxpost.generateRequest();
         },
-
+        
         _handleInitialResponse: function(e)
         {
             console.log("Followup GET", new Date().getTime());
@@ -992,17 +1002,21 @@
                 }
 
                 this._chosenDropPoint = changedDroppoint;
+                this._unChosen = false;
+                //this.$$('#delivery-address').classList.add('hidden'); //zzzzzz
                 //this._chosenDropPoint.initData();//streetAddress = "Hello";
             }
             //If a droppoint has been unchosen and it's the currently registered choice, unregister it
             else if (this._chosenDropPoint) {
                 if (this._chosenDropPoint.droppointData.droppointId == changedDroppoint.droppointData.droppointId) {
-                    this._chosenDropPoint = null;
-                }              
+                    this._unChoose();
+                }
             }
-            //this.$$('#chosen-droppoint').render();
+        },
 
-            
+        _unChoose: function() {
+            this._chosenDropPoint = null;
+            this._unChosen = true;
         },
 
         _droppointById: function(id) {

@@ -4,13 +4,15 @@
 <dom-module id="gfs-carrier-info">
     <style>
         #container {
-            margin-top: 0.4em;
-            margin-bottom: 0.4em;
             display: flex;
-            border-radius: 2px;
+            padding: 10px;
+            margin: 10px;    
+            width: 500px;
+            height: 208px;
+            border-radius: 3px;
             box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
-            border: 1px solid #808080;
-        
+            border: 1px solid #FAFAFA;
+            font-size: 0.75em;        
         }
         gfs-carrier-icon {
             margin-right: 0.4em;
@@ -19,23 +21,37 @@
             margin-top: 0.2em;
             margin-left: 0.4em;
         }
-        .infoText, .infoLink {
-            padding: 0.8em;
+        .infoText {
+            padding-left: 1em;
+            padding-right: 0em;
+            padding-bottom: 0.2em; 
+        }
+        .infoLink {
+            float: right;
+        }
+        .button {
+            background-color: #555555;
+            border: none;
+            color: white;
+            margin-top: 4px;
+            padding: 8px 20px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            float: right;
         }
 
     </style>
 
     <template>
         <div id="container">
-            <gfs-carrier-icon carrier-code="dpdPickup" icon-size="largest"></gfs-carrier-icon>
+            <gfs-carrier-icon carrier-code="dpdPickup" icon-size="large"></gfs-carrier-icon>
 
-            <div class="info">
-                <h3>{{title}}</h3>
+            <div class="infoArea">
+                <a class="infoLink" href="{{url}}">More information</a>
+                <h3>{{title}}</h3>             
                 <div class="infoText">{{info}}</div>
-                <div class="infoLink">
-                    For more information visit<br />
-                    <a target="_blank" href="{{url}}">{{url}}</a>
-                </div>
+               
             </div>  
         </div>
 

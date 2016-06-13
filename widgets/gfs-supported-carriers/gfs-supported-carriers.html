@@ -10,26 +10,33 @@
             gfs-carrier-icon {
                 margin: 0.5em;
             }
-            h3 {
-                margin-top: 0px
+            .heading {
+                font-size: 1em;
+                margin-left: -0.5em;
+                margin-right: -0.5em;
+                text-align: center;
             }
-            #container {
-                float: right;
-                border-radius: 2px;
-                box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);            
+            #container {           
                 border: 1px solid #808080;
-                padding: 1em;
+                padding: 10px;
+                margin: 10px;    
+                background-color: #FAFAFA;
+                border-radius: 3px;
+                box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+                border: 1px solid #FAFAFA;
             }
             .stack-right {
                 display: flex;
+                flex-direction: column;
+                padding: 10px;
             }
 
         </style>
         <div id="container">
-            <h3>Our Carriers</h3>
+            <div class="heading">Our Carriers</div>
             <div class="stack-right">
                 <template is="dom-repeat" items="{{_carrierList}}">
-                    <gfs-carrier-icon carrier-code="{{item}}"></gfs-carrier-icon>
+                    <gfs-carrier-icon icon-size="medium" carrier-code="{{item}}"></gfs-carrier-icon>
                 </template>
             </div>
 
